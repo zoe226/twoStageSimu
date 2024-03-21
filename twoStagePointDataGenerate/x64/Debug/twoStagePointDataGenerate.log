@@ -1,2 +1,5 @@
 ﻿  mimoRadarTwoStageMain.cpp
-C:\Users\wdxc-soc\Desktop\48T48R\算法工程化\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(30,37): error C2061: 语法错误: 标识符“TxGroupNum”
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(152,13): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(153,13): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(286): error C4716: “getArray”: 必须返回一个值
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(257): error C4716: “get_virtual_array”: 必须返回一个值

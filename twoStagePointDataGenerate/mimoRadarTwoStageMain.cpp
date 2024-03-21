@@ -107,8 +107,8 @@ struct ParaSys {
 	vector<float> AngleHorAxis; //(128)
 	vector<float> AngleVertAxis; // (32)
 	vector<int> snr_dB_different_dim; //(4)
-	int detect_option;
-	float static_vel_thres;
+	int detect_option; // nouse
+	float static_vel_thres;  //nouse
 	float blind_zone;
 	vector<int> cfar_include_order; //(4)
 	vector<int> cfar_exclude_order; //(4)
