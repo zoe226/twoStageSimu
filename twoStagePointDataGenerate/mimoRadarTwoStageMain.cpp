@@ -382,11 +382,6 @@ void get_info(std::string filename, BinFile &bin_file) {
 
 	parseDataFile(buffer, bin_file);
 
-
-	/*ParaSys sys;
-	bin_file.para_sys = sys;
-	bin_file.input_data = std::make_unique<int16_t[]>(10);
-	bin_file.compensate_mat = std::make_unique<float[]>(10);*/
 }
 
 int main(int argc, char* argv[]) {
@@ -396,25 +391,6 @@ int main(int argc, char* argv[]) {
 
 	BinFile bin_file;
 	get_info(filename, bin_file);
-	auto& para_sys = bin_file.para_sys;
-	auto& input_data = bin_file.input_data;
-	auto& compensate_mat = bin_file.compensate_mat;
-
-
-	const size_t bufferSize = 83886080;
-
-	std::ifstream file(filename, std::ios::binary);
-	if (!file.is_open()) {
-		std::cerr << "无法打开文件" << std::endl;
-		return 1;
-	}
-
-	std::vector<unsigned char> buffer(bufferSize, 0);
-	file.read(reinterpret_cast<char*>(buffer.data()), bufferSize);
-	size_t bytesRead = file.gcount();
-
-	BinFile temp_bin_info;
-	parseDataFile(buffer, temp_bin_info);
 
 	// 2. deal
 	// Result fun(Binfile &info);
