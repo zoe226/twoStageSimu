@@ -124,8 +124,8 @@ struct ParaSys {
 
 struct BinFile {
 	ParaSys para_sys;
-	float* input_data;
-	float* compensate_mat;
+	std::unique_ptr<float[]> input_data;
+	std::unique_ptr<float[]> compensate_mat;
 };
 
 struct Virtual_array {
@@ -143,8 +143,8 @@ BinFile get_info(std::string file) {
 	BinFile bin_file;
 	ParaSys sys;
 	bin_file.para_sys = sys;
-	bin_file.input_data = new float(1);
-	bin_file.compensate_mat = new float(1);
+	bin_file.input_data = std::make_unique<float[]>(10);
+	bin_file.compensate_mat = std::make_unique<float[]>(10);
 	return bin_file;
 }
 
@@ -286,11 +286,9 @@ BinFile get_info(std::string file) {
 //	para_array.min_element_space_y_relto_semilamda = min_element_space_y_relto_semilamda;
 //}
 
-BinFile parseDataFile(vector<unsigned char> &inputBuffer) {
-	BinFile bin_file;
+void parseDataFile(vector<unsigned char> &inputBuffer, BinFile &bin_file) {
 	if (inputBuffer.size() < 83886080) {
 		std::cerr << "Buffer does not contain enough data to parse." << endl;
-			return bin_file;
 	}
 	memcpy(&bin_file.para_sys.InputHasDonePreProcess, inputBuffer.data() + 260,sizeof(unsigned char));
 	memcpy(&bin_file.para_sys.vel_target_generated_by_moniqi, inputBuffer.data() + 261, sizeof(unsigned char));
@@ -320,7 +318,8 @@ BinFile parseDataFile(vector<unsigned char> &inputBuffer) {
 
 
 	//std::cout << static_cast<uint8_t>(bin_file.para_sys.InputHasDonePreProcess) << std::endl;
-	return bin_file;
+	bin_file.input_data = std::make_unique<float[]>(10);
+	bin_file.compensate_mat = std::make_unique<float[]>(10);
 }
 
 int main(int argc, char* argv[]) {
@@ -345,7 +344,8 @@ int main(int argc, char* argv[]) {
 	file.read(reinterpret_cast<char*>(buffer.data()), bufferSize);
 	size_t bytesRead = file.gcount();
 
-	bin_info = parseDataFile(buffer);
+	BinFile temp_bin_info;
+	parseDataFile(buffer, temp_bin_info);
 
 	// 2. deal
 	// Result fun(Binfile &info);
