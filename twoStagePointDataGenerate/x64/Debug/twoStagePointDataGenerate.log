@@ -1,2 +1,15 @@
 ﻿  mimoRadarTwoStageMain.cpp
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(145,18): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(146,18): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(241,42): warning C4244: “=”: 从“float”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=uint16_t
+          ]
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(246,42): warning C4244: “=”: 从“float”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=uint16_t
+          ]
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(375,33): warning C4305: “=”: 从“double”到“float”截断
   twoStagePointDataGenerate.vcxproj -> D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\x64\Debug\twoStagePointDataGenerate.exe
