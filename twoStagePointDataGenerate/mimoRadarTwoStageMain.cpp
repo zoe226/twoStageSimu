@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <complex>
 using namespace std;
 
 const uint16_t CoarseFrame_CFARdim = 2;
@@ -184,7 +185,7 @@ void  get_virtual_array(Virtual_array &virtual_array, const vector<int16_t>& rx_
 	min_Rx_y = *min_element(Virtual_Rx_pos_y.begin(), Virtual_Rx_pos_y.end());
 	virtual_array.x_max_pos = max_Rx_x;
 	virtual_array.x_min_pos = min_Rx_x;
-	virtual_array.y_max_pos = max_Rx_x;
+	virtual_array.y_max_pos = max_Rx_y;
 	virtual_array.y_min_pos = min_Rx_y;
 
 	sort(Virtual_Rx_pos_x.begin(), Virtual_Rx_pos_x.end());
@@ -534,11 +535,16 @@ int main(int argc, char* argv[]) {
 	// 1. get info
 	// coarse frame data file parse code
 	std::string filename = "ADCData_Frame_000000_20240314_17_22_19_2876_ShareMemory.bin";
-
 	BinFile bin_file;
 	Virtual_array virtual_array;
-	get_info(filename, bin_file, virtual_array);
+	vector<complex<float>> compensate;
 
+	get_info(filename, bin_file, virtual_array);
+	
+	compensate.reserve(bin_file.para_sys.TxNum * bin_file.para_sys.RxNum);
+	for (uint16_t i = 0; i < bin_file.para_sys.TxNum * bin_file.para_sys.RxNum; i++) {
+		compensate.emplace_back(bin_file.compensate_mat[2*i], bin_file.compensate_mat[2 * i + 1]);
+	}
 
 	// 2. deal
 	// Result fun(Binfile &info);
