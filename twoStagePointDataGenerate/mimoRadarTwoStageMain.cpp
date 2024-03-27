@@ -254,7 +254,7 @@ void  get_virtual_array(Virtual_array &virtual_array, const vector<int16_t>& rx_
 			pos_in_mat[i][1] = relative_pos[i][1] / virtual_array.y_space;
 		}
 	}
-	virtual_array.pos_in_mat = pos_in_mat;  // matlab add one?
+	virtual_array.pos_in_mat = pos_in_mat;  
 }
 
 struct ParaArray {
@@ -274,7 +274,7 @@ struct ParaArray {
 	float min_element_space_y_relto_semilamda = 3;
 	vector<int16_t> Rx_pos_x{0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52};
 	vector<int16_t> Rx_pos_y{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36};
-	vector<int16_t> Tx_pos_x{0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,3,3,3,48,48,48,48,48,48,48,48,48,48,48,48,51,51,51,51,51,51,51,51,51,51,51,51};
+	vector<int16_t> Tx_pos_x{0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,3,3,3,48,48,48,48,48,48,48,48,48,48,48,48,51,51,51,51,51,51,51,51,51,51,51,51};
 	vector<int16_t> Tx_pos_y{6,9,12,15,18,21,24,27,30,33,36,39,6,9,12,15,18,21,24,27,30,33,36,39,-3,0,3,6,9,12,15,18,21,24,27,30,-3,0,3,6,9,12,15,18,21,24,27,30};
 
 	para_array.tx_x_pos_renorm = Tx_pos_x;
@@ -309,7 +309,7 @@ void parseDataFile(vector<unsigned char> &inputBuffer, BinFile &bin_file) {
 	bin_file.para_sys.delta_hop_freq_fstart_seq.assign(reinterpret_cast < float*>(inputBuffer.data()+270+ bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum*2), reinterpret_cast <float*>(inputBuffer.data()+270 + bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum * 2 + 4* bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum*sizeof(unsigned char)));
 	memcpy(&bin_file.para_sys.ChirpPRI, inputBuffer.data() + 270 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum, 4 * sizeof(unsigned char));
 	memcpy(&bin_file.para_sys.hop_freq_low_boundry, inputBuffer.data() + 274 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum, 4 * sizeof(unsigned char));
-	// memcpy(&bin_file.para_sys.Virtual_array_pos_Hor, inputBuffer.data() + 278 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum, 4 * sizeof(unsigned char));
+	// Virtual_array_pos_Hor
 	// Virtual_array_pos_Vert
 	// Virtual_array_pos_Hor_in_mat
 	// Virtual_array_pos_Vert_in_mat
@@ -352,7 +352,7 @@ void parseDataFile(vector<unsigned char> &inputBuffer, BinFile &bin_file) {
 	memcpy(bin_file.compensate_mat.get(), inputBuffer.data() + 305 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum + 12 * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum + 4 * bin_file.para_sys.CoarseRangeNum + 4 * bin_file.para_sys.FineRangeNum + 4 * bin_file.para_sys.VelocityNum + 4 * bin_file.para_sys.AngleHorNum + 4 * bin_file.para_sys.AngleVertNum, 4 * sizeof(unsigned char) * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum * 2);
 	memcpy(bin_file.input_data.get(), inputBuffer.data() + 3328 + 340 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum + 20 * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum + 4 * bin_file.para_sys.CoarseRangeNum + 4 * bin_file.para_sys.FineRangeNum + 4 * bin_file.para_sys.VelocityNum + 4 * bin_file.para_sys.AngleHorNum + 4 * bin_file.para_sys.AngleVertNum, 2 * sizeof(unsigned char) * bin_file.para_sys.RxNum * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum * bin_file.para_sys.RangeSampleNum * 2);
 }
-void getDetPara(DetPara &det_para, ParaSys &para_sys) {
+void getDetPara(DetPara& det_para, ParaSys& para_sys) {
 	det_para.con_reg.PowerDetEn = 0;
 	det_para.con_reg.SnrThre = 8;
 	det_para.con_reg.RextendNum = 5;
@@ -366,7 +366,7 @@ void getDetPara(DetPara &det_para, ParaSys &para_sys) {
 			det_para.con_reg.RextendNum = 1;
 			det_para.con_reg.VextendNum = 1;
 		}
-		else if(para_sys.frame_type == 1)
+		else if (para_sys.frame_type == 1)
 		{
 			TOI.resize(para_sys.CoarseRangeNum, vector<float>(2));
 			for (int i = 0; i < para_sys.CoarseRangeNum; i++) {
@@ -396,12 +396,79 @@ void getDetPara(DetPara &det_para, ParaSys &para_sys) {
 			}
 		}
 	}
+	det_para.ChToProcess_Num_u7 = 1;
+	string str = "11";
+	det_para.Switch_DataCompress_u2.assign(str.begin(),str.end());
+	det_para.PassAbsData_u1 = 1;
+	det_para.PassChMeanData_u1 = 1;
+	det_para.PassPeakS_u1 = 1;
+	det_para.OneDEnable = 0;
+	det_para.Reg_PGA_u15 = 272;
+	det_para.PeakS_Enable_u1 = 1;
+
+	if (para_sys.frame_type == 0) {
+		det_para.RangeCellNum_u10 = para_sys.CoarseRangeNum;
+		det_para.ChirpNum_u11 = para_sys.VelocityNum;
+	}
+	else {
+		det_para.RangeCellNum_u10 = para_sys.FineRangeNum * (para_sys.RangeCell_left + para_sys.RangeCell_right + 1);
+		det_para.ChirpNum_u11 = para_sys.VelocityCell_left + para_sys.VelocityCell_right + 1;
+	}
+	det_para.DetectCell_RIndex_Min_u10 = 2;
+	det_para.DetectCell_RIndex_Max_u10 = det_para.RangeCellNum_u10 - 1;
+	det_para.DetectCell_VIndex_Min_u11 = 1;
+	det_para.DetectCell_VIndex_Max_u11 = det_para.ChirpNum_u11;
+
+	string str_cfar = "11";
+	det_para.CFARTypeSwitch_u2.assign(str_cfar.begin(), str_cfar.end());
+	det_para.LogicTestFlag_u1 = 1;
+	det_para.cfar_para.ProCellNum_R_u2 = 3;
+	det_para.cfar_para.ProCellNum_V_u2 = 3;
+	det_para.cfar_para.RefCellNum_1D_u5 = 8;
+	det_para.Loc_OSCFAR_u5 = 10;
+	det_para.Index_Chirp_NotMove_OSCFAR_u11 = 1;
+	det_para.Threshold_RangeDim_For_2D_OSCFAR_u9 = 13;
+	det_para.asicsavedata_flag = 0;
+	det_para.IndexCHIP_u3 = 1;
+
+	det_para.spatial_para.Vsnr_Thre_db = 1;
+	det_para.spatial_para.HorProfThre_db = 16;
+	det_para.spatial_para.PeakSen = 1;
+	det_para.spatial_para.HorOffsetidx = 6;
+	det_para.spatial_para.HorOffPeakThre_db = 8;
+	det_para.spatial_para.Global_noise_Thre_db = 20;
+	det_para.spatial_para.min_snr_Hor_db = 15;
+	det_para.spatial_para.VerThreshold = 16;
+	det_para.spatial_para.HorCfarGuardNum = 5;
+	det_para.spatial_para.HorCfarReferNum = 25;
+
+	det_para.spatial_para.Horminidx = 1;
+	det_para.spatial_para.Hormaxidx = para_sys.AngleHorNum;
+	det_para.spatial_para.Verminidx = 1;
+	det_para.spatial_para.Vermaxidx = para_sys.AngleVertNum;
+	if (para_sys.work_mode == 1) {
+		if (para_sys.frame_type == 1) {
+			if (det_para.con_reg.RextendNum != 1 && det_para.con_reg.VextendNum != 1) {
+				det_para.spatial_para.Horminidx = 1;
+				det_para.spatial_para.Hormaxidx = para_sys.AngleHorNum;
+				det_para.spatial_para.Verminidx = 1;
+				det_para.spatial_para.Vermaxidx = para_sys.AngleVertNum * det_para.RangeCellNum_u10 * det_para.ChirpNum_u11;
+			}
+		}
+	}
+
+	if (para_sys.frame_type == 0) {
+		if (para_sys.work_mode == 0) {
+			det_para.union_para.CompareIdx = 3;
+			det_para.union_para.MaxValIdx = 9;
+		}
+		else {
+			det_para.union_para.CompareIdx = 2;
+			det_para.union_para.MaxValIdx = 4;
+		}
+	}
 }
-void get_info(std::string filename, BinFile &bin_file) {
-	// 输入文件名字，和bin_file
-	// 输出解析文件赋值bin_file，帧头中没有的手动写入(注意ADC文件中有些参数两阶段平台是没有采用的，跳过处理)
-	// 先打开文件确认能打开，然后解析文件的帧头来解析参数，最后将帧头中没有的参数部分手动配置(注意如TxGroupNum的参数要先于一些ADC中的文件来配置，类似这样的顺序要注意)
-	// 帧头中包含virtual array的信息，确认是否将virtual array也作为输入的参数，对其部分值也进行配置
+void get_info(std::string filename, BinFile &bin_file, Virtual_array &virtual_array) {
 	std::ifstream file(filename, std::ios::binary);
 	if (!file.is_open()) {
 		std::cerr << "无法打开文件!" << std::endl;
@@ -438,6 +505,29 @@ void get_info(std::string filename, BinFile &bin_file) {
 	bin_file.para_sys.work_mode = 0;
 	bin_file.para_sys.frame_type = 0;
 	getDetPara(bin_file.para_sys.det_para,bin_file.para_sys);
+
+	ParaArray para_array;
+	getArray(para_array);
+	if (bin_file.para_sys.frame_type == 0) {
+		// tx pos renorm 
+		vector<uint16_t> tx_x_pos_renorm(bin_file.para_sys.txNum_in_group * bin_file.para_sys.TxGroupNum);
+		vector<uint16_t> tx_y_pos_renorm(bin_file.para_sys.txNum_in_group * bin_file.para_sys.TxGroupNum);
+		uint16_t txRealNum = 0;
+		for (int i = 0; i < bin_file.para_sys.TxGroupNum; i++) {
+			for (int j = 0; j < bin_file.para_sys.txNum_in_group; j++) {
+				tx_x_pos_renorm[txRealNum] = para_array.tx_x_pos_renorm[bin_file.para_sys.TxGroup[i][j] - 1];
+				tx_y_pos_renorm[txRealNum] = para_array.tx_x_pos_renorm[bin_file.para_sys.TxGroup[i][j] - 1];
+				txRealNum++;
+			}
+		}
+		para_array.tx_x_pos_renorm.assign(tx_x_pos_renorm.begin(), tx_x_pos_renorm.end());
+		para_array.tx_y_pos_renorm.assign(tx_y_pos_renorm.begin(), tx_y_pos_renorm.end());
+	}
+	get_virtual_array(virtual_array, para_array.rx_x_pos_renorm, para_array.rx_y_pos_renorm, para_array.tx_x_pos_renorm, para_array.tx_y_pos_renorm);
+	if (bin_file.para_sys.frame_type == 0) {
+		bin_file.para_sys.MinElementSpaceHorRelToLamda = virtual_array.x_space/2;
+		bin_file.para_sys.MinElementSpaceVertRelToLamda = virtual_array.y_space/2;
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -446,7 +536,9 @@ int main(int argc, char* argv[]) {
 	std::string filename = "ADCData_Frame_000000_20240314_17_22_19_2876_ShareMemory.bin";
 
 	BinFile bin_file;
-	get_info(filename, bin_file);
+	Virtual_array virtual_array;
+	get_info(filename, bin_file, virtual_array);
+
 
 	// 2. deal
 	// Result fun(Binfile &info);

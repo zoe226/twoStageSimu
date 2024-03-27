@@ -11,6 +11,5 @@ D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(254,
           [
               _Ty=uint16_t
           ]
-D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(384,75): warning C4554: “&”: 检查运算符优先级是否存在的可能的错误；使用括号阐明优先级
-D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(422,33): warning C4305: “=”: 从“double”到“float”截断
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(489,33): warning C4305: “=”: 从“double”到“float”截断
   twoStagePointDataGenerate.vcxproj -> D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\x64\Debug\twoStagePointDataGenerate.exe
