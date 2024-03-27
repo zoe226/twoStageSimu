@@ -1,15 +1,16 @@
 ﻿  mimoRadarTwoStageMain.cpp
-D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(145,18): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
-D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(146,18): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
-D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(241,42): warning C4244: “=”: 从“float”转换到“_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(153,18): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(154,18): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(249,42): warning C4244: “=”: 从“float”转换到“_Ty”，可能丢失数据
           with
           [
               _Ty=uint16_t
           ]
-D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(246,42): warning C4244: “=”: 从“float”转换到“_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(254,42): warning C4244: “=”: 从“float”转换到“_Ty”，可能丢失数据
           with
           [
               _Ty=uint16_t
           ]
-D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(375,33): warning C4305: “=”: 从“double”到“float”截断
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(384,75): warning C4554: “&”: 检查运算符优先级是否存在的可能的错误；使用括号阐明优先级
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\mimoRadarTwoStageMain.cpp(422,33): warning C4305: “=”: 从“double”到“float”截断
   twoStagePointDataGenerate.vcxproj -> D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\x64\Debug\twoStagePointDataGenerate.exe

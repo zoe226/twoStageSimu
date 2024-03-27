@@ -5,6 +5,10 @@
 #include <fstream>
 using namespace std;
 
+const uint16_t CoarseFrame_CFARdim = 2;
+uint16_t FineFrame_CfarDim = 4;
+vector<vector<float>> TOI;
+
 // 1. read_bin
 // 2. adc or 1dfft（real or complex） vector<double>(3) or data[size]
 // 3. 1dfft() -> 点云选取
@@ -128,6 +132,10 @@ struct ParaSys {
 	uint16_t VelocityNum;  // raw frame head parameter,size of coarseRangeAxis
 	uint16_t AngleHorNum;  // raw frame head parameter,size of coarseRangeAxis
 	uint16_t AngleVertNum;  // raw frame head parameter,size of coarseRangeAxis
+	uint16_t RangeCell_left;
+	uint16_t RangeCell_right;
+	uint16_t VelocityCell_left;
+	uint16_t VelocityCell_right;
 };
 
 struct Virtual_array {
@@ -344,9 +352,50 @@ void parseDataFile(vector<unsigned char> &inputBuffer, BinFile &bin_file) {
 	memcpy(bin_file.compensate_mat.get(), inputBuffer.data() + 305 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum + 12 * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum + 4 * bin_file.para_sys.CoarseRangeNum + 4 * bin_file.para_sys.FineRangeNum + 4 * bin_file.para_sys.VelocityNum + 4 * bin_file.para_sys.AngleHorNum + 4 * bin_file.para_sys.AngleVertNum, 4 * sizeof(unsigned char) * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum * 2);
 	memcpy(bin_file.input_data.get(), inputBuffer.data() + 3328 + 340 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum + 20 * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum + 4 * bin_file.para_sys.CoarseRangeNum + 4 * bin_file.para_sys.FineRangeNum + 4 * bin_file.para_sys.VelocityNum + 4 * bin_file.para_sys.AngleHorNum + 4 * bin_file.para_sys.AngleVertNum, 2 * sizeof(unsigned char) * bin_file.para_sys.RxNum * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum * bin_file.para_sys.RangeSampleNum * 2);
 }
-void getDetPara(DetPara &det_para) {
-	;
-
+void getDetPara(DetPara &det_para, ParaSys &para_sys) {
+	det_para.con_reg.PowerDetEn = 0;
+	det_para.con_reg.SnrThre = 8;
+	det_para.con_reg.RextendNum = 5;
+	det_para.con_reg.VextendNum = 7;
+	if ((FineFrame_CfarDim == 2) || (FineFrame_CfarDim == 3)) {
+		det_para.con_reg.RextendNum = 1;
+		det_para.con_reg.VextendNum = 1;
+	}
+	if (para_sys.work_mode == 0) {
+		if (para_sys.frame_type == 0) {
+			det_para.con_reg.RextendNum = 1;
+			det_para.con_reg.VextendNum = 1;
+		}
+		else if(para_sys.frame_type == 1)
+		{
+			TOI.resize(para_sys.CoarseRangeNum, vector<float>(2));
+			for (int i = 0; i < para_sys.CoarseRangeNum; i++) {
+				TOI[i][0] = para_sys.CoarseRangeAxis[i];
+				TOI[i][1] = para_sys.VelocityAxis[0];
+			}
+			para_sys.RangeCell_left = 0;
+			para_sys.RangeCell_right = 0;
+			para_sys.VelocityCell_left = 0;
+			para_sys.VelocityCell_right = para_sys.TxGroupNum * para_sys.TxReuseNum - 1;
+		}
+	}
+	else if (para_sys.work_mode == 1) {
+		if (para_sys.frame_type == 1) {
+			if ((det_para.con_reg.RextendNum != 1) && (det_para.con_reg.VextendNum != 1)) {
+				para_sys.RangeCell_left = 0;
+				para_sys.RangeCell_right = 0;
+				para_sys.VelocityCell_left = 1;
+				para_sys.VelocityCell_right = 1;
+				FineFrame_CfarDim = 4;
+			}
+			else {
+				para_sys.RangeCell_left = 3;
+				para_sys.RangeCell_right = 3;
+				para_sys.VelocityCell_left = 10;
+				para_sys.VelocityCell_right = 10;
+			}
+		}
+	}
 }
 void get_info(std::string filename, BinFile &bin_file) {
 	// 输入文件名字，和bin_file
@@ -368,13 +417,9 @@ void get_info(std::string filename, BinFile &bin_file) {
 	bin_file.para_sys.txNum_in_group = 1;
 	bin_file.para_sys.TxGroup.push_back({1});  // TxGroupNum*txNum_in_group
 	bin_file.para_sys.waveLocNum = 1;
-	// bin_file.para_sys.waveLocChirpSeq.resize(bin_file.para_sys.waveLocNum,vector<uint16_t>(cols));
-	bin_file.para_sys.waveLocChirpSeq.push_back({0});  // waveLocNum * (totalChirpNum/waveLocNum)
 	bin_file.para_sys.DopplerBandNum = 1;
 	bin_file.para_sys.detect_option = 0;
 	bin_file.para_sys.cfar_2d_tf = 1.8;
-	//bin_file.para_sys.det_para;
-	getDetPara(bin_file.para_sys.det_para);
 	bin_file.para_sys.lightSpeed = 299792458.0f;
 	bin_file.para_sys.plot_option = 0;
 	bin_file.para_sys.work_mode = 0;
@@ -382,6 +427,17 @@ void get_info(std::string filename, BinFile &bin_file) {
 
 	parseDataFile(buffer, bin_file);
 
+	uint16_t cols = bin_file.para_sys.TxReuseNum * bin_file.para_sys.TxGroupNum/bin_file.para_sys.waveLocNum;
+	bin_file.para_sys.waveLocChirpSeq.resize(bin_file.para_sys.waveLocNum,vector<uint16_t>(cols));
+	for (int i = 0; i < bin_file.para_sys.waveLocNum;i++) {
+		for (int j = 0; j < cols; j++) {
+			bin_file.para_sys.waveLocChirpSeq[i][j] = j + 1;  // waveLocNum * (totalChirpNum/waveLocNum)
+		}	
+	}
+
+	bin_file.para_sys.work_mode = 0;
+	bin_file.para_sys.frame_type = 0;
+	getDetPara(bin_file.para_sys.det_para,bin_file.para_sys);
 }
 
 int main(int argc, char* argv[]) {
