@@ -7,9 +7,9 @@
 #include <complex>
 
 using namespace std;
-static const uint16_t CoarseFrame_CFARdim = 2;
-static uint16_t FineFrame_CfarDim = 4;
-static vector<vector<float>> TOI;
+extern const uint16_t CoarseFrame_CFARdim;
+extern uint16_t FineFrame_CfarDim;
+extern vector<vector<float>> TOI;
 
 struct ConReg {
 	uint8_t PowerDetEn;
@@ -139,8 +139,6 @@ struct Virtual_array {
 	vector<vector<uint16_t>> pos_in_mat;
 };
 
-
-
 struct ParaArray {
 	vector<int16_t> rx_x_pos_renorm;
 	vector<int16_t> rx_y_pos_renorm;
@@ -149,7 +147,6 @@ struct ParaArray {
 	float min_element_space_x_relto_semilamda;
 	float min_element_space_y_relto_semilamda;
 };
-
 
 struct BinFile {
 	ParaSys para_sys;

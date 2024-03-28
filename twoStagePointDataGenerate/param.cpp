@@ -1,5 +1,9 @@
 #include "param.hpp"
 
+const uint16_t CoarseFrame_CFARdim = 2;
+uint16_t FineFrame_CfarDim = 4;
+vector<vector<float>> TOI;
+
 void  get_virtual_array(Virtual_array& virtual_array, const vector<int16_t>& rx_x_pos_renorm, const vector<int16_t>& rx_y_pos_renorm, const vector<int16_t>& tx_x_pos_renorm, const vector<int16_t>& tx_y_pos_renorm) {
 	uint16_t Tx_num = size(tx_x_pos_renorm);
 	uint16_t Rx_num = size(rx_x_pos_renorm);

@@ -8,8 +8,6 @@
 #include "param.hpp"
 using namespace std;
 
-
-
 // 1. read_bin
 // 2. adc or 1dfft£®real or complex£© vector<double>(3) or data[size]
 // 3. 1dfft() -> µ„‘∆—°»°
@@ -22,11 +20,6 @@ using namespace std;
 // fine
 
 // libs: fft, blas
-
-
-
-
-
 
 int main(int argc, char* argv[]) {
 	// 1. get info
