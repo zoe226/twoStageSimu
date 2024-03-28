@@ -7,6 +7,8 @@
 #include <stdexcept>
 
 #include "param.hpp"
+#include "coarseFrameSignalProcess.hpp"
+#include "fineFrameSignalProcess.hpp"
 using namespace std;
 
 // 1. read_bin ¡Ì
@@ -21,15 +23,6 @@ using namespace std;
 // fine
 
 // libs: fft, blas
-void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>>& point_info, const string &filename,ParaSys &para_sys, Virtual_array &virtual_array, unique_ptr<int16_t[]> &radarInputdata, vector<complex<float>> &compensate_mat) {
-
-}
-
-void func_signal_process_fine(vector<vector<float>>& result_data, const string &filename, ParaSys& para_sys, Virtual_array& virtual_array, unique_ptr<int16_t[]>& radarInputdata, vector<complex<float>>& compensate_mat, vector<vector<float>>& TOI) {
-	// result_data is detect_target_data
-
-}
-
 int main(int argc, char* argv[]) {
 	// 1. get info
 	// coarse frame data file parse code
