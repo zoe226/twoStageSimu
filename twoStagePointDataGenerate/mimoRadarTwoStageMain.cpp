@@ -30,12 +30,12 @@ int main(int argc, char* argv[]) {
 	BinFile bin_file;
 	Virtual_array virtual_array;
 	vector<complex<float>> compensate;
-	
+
 	get_info(filename, bin_file, virtual_array);
-	
+
 	compensate.reserve(bin_file.para_sys.TxNum * bin_file.para_sys.RxNum);
 	for (uint16_t i = 0; i < bin_file.para_sys.TxNum * bin_file.para_sys.RxNum; i++) {
-		compensate.emplace_back(bin_file.compensate_mat[2*i], bin_file.compensate_mat[2 * i + 1]);
+		compensate.emplace_back(bin_file.compensate_mat[2 * i], bin_file.compensate_mat[2 * i + 1]);
 	}
 
 	vector<vector<float>> point_info;
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 	// 2. deal
 	// Result fun(Binfile &info);
 	if (bin_file.para_sys.frame_type == 0) {
-		TOI.resize(TOI_max,vector<float>(4));
+		TOI.resize(TOI_max, vector<float>(4));
 		if (bin_file.para_sys.work_mode == 0) {
 			point_info.resize(point_max, vector<float>(11));
 		}
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 		if (bin_file.para_sys.analysis_step == 3) {
 			func_signal_process_fine(result_data, filename, bin_file.para_sys, virtual_array, bin_file.input_data, compensate, TOI);
 		}
-		
+
 	}
 	else
 	{
