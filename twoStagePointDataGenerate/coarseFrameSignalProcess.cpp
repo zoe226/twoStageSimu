@@ -3,6 +3,7 @@
 #include "coarseFrameSignalProcess.hpp"
 #include <math.h>
 #include <cmath>
+#include <fftw3.h>
 
 
 void rectWin(vector<float>& win_rect, uint16_t N) {
@@ -73,13 +74,47 @@ void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>
 	vector<vector<vector<complex<float>>>> CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum(para_sys.CoarseRangeNum, vector<vector<complex<float>>>(para_sys.VelocityNum, vector<complex<float>>(para_sys.RxNum)));
 
 	if (para_sys.InputHasDonePreProcess == 0) {
-		// winr and fftr
+		// winr 
 		vector<vector<vector<float>>> WinRout_RangeSampleNum_ChirpNum_RxNum(para_sys.RangeSampleNum, vector<vector<float>>(para_sys.VelocityNum, vector<float>(para_sys.RxNum)));
 		func_winR_process(WinRout_RangeSampleNum_ChirpNum_RxNum, para_sys.fft_win_type, para_sys.RangeSampleNum, para_sys.VelocityNum, para_sys.RxNum, radarInputdata);
+		
+		// test code
+		vector<float> temp(para_sys.RangeSampleNum);
+		for (int i = 0; i < para_sys.RangeSampleNum; i++) {
+			temp[i] = WinRout_RangeSampleNum_ChirpNum_RxNum[i][45][23];
+		}
 
+		// fftr
+		//vector<vector<vector<complex<float>>>> CoarseRangeFFT_SampleNum_ChirpNum_RxNum(para_sys.RangeSampleNum, vector<vector<complex<float>>>(para_sys.VelocityNum, vector<complex<float>>(para_sys.RxNum)));
+		for (int i = 0; i < para_sys.VelocityNum; i++) {
+			for (int j = 0; j < para_sys.RxNum; j++) {
+				double* in;
+				fftw_complex* out;
+				fftw_plan pfft;
+				in = (double*)fftw_malloc(sizeof(double) * para_sys.RangeSampleNum);
+				out = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * para_sys.RangeSampleNum);
+				for (int k = 0; k < para_sys.RangeSampleNum; k++) {
+					in[k] = WinRout_RangeSampleNum_ChirpNum_RxNum[k][i][j];
+				}
+				pfft = fftw_plan_dft_r2c_1d(para_sys.RangeSampleNum,in,out,FFTW_ESTIMATE);
+				fftw_execute(pfft);
+				for (int k = 0; k < para_sys.RangeSampleNum/2; k++) {
+					CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][i][j] = complex<float>(out[k][0],out[k][1]);
+				}
+				fftw_destroy_plan(pfft);
+				fftw_free(in);
+				fftw_free(out);
+			}
+		}
+		// test code
+		vector<complex<float>> tempfftr(para_sys.RangeSampleNum/2);
+		for (int i = 0; i < para_sys.RangeSampleNum / 2; i++) {
+			tempfftr[i] = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[i][45][23];
+		}
 	}
 	else if (para_sys.InputHasDonePreProcess == 1) {
 		// reshape 
+
 	}
 	else {
 		throw invalid_argument("Input value is illegal.");

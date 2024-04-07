@@ -118,10 +118,10 @@ struct ParaSys {
 	uint8_t work_mode;
 	uint8_t frame_type;  // different with matlab, add to parasys
 	uint16_t CoarseRangeNum;  // raw frame head parameter,size of coarseRangeAxis
-	uint16_t FineRangeNum;  // raw frame head parameter,size of coarseRangeAxis
-	uint16_t VelocityNum;  // raw frame head parameter,size of coarseRangeAxis
-	uint16_t AngleHorNum;  // raw frame head parameter,size of coarseRangeAxis
-	uint16_t AngleVertNum;  // raw frame head parameter,size of coarseRangeAxis
+	uint16_t FineRangeNum;  // raw frame head parameter,size of FineRangeAxis
+	uint16_t VelocityNum;  // raw frame head parameter,size of VelocityAxis
+	uint16_t AngleHorNum;  // raw frame head parameter,size of AngleHorAxis
+	uint16_t AngleVertNum;  // raw frame head parameter,size of AngleVertAxis
 	uint16_t RangeCell_left;
 	uint16_t RangeCell_right;
 	uint16_t VelocityCell_left;

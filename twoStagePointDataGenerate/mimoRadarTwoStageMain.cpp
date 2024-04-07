@@ -59,7 +59,6 @@ int main(int argc, char* argv[]) {
 		}
 
 		func_signal_process_coarse(TOI, point_info, filename, bin_file.para_sys, virtual_array, bin_file.input_data, compensate);
-
 	}
 	else if (bin_file.para_sys.frame_type == 1) {
 		result_data.resize(result_max, vector<float>(9));
@@ -67,7 +66,6 @@ int main(int argc, char* argv[]) {
 		if (bin_file.para_sys.analysis_step == 3) {
 			func_signal_process_fine(result_data, filename, bin_file.para_sys, virtual_array, bin_file.input_data, compensate, TOI);
 		}
-
 	}
 	else
 	{
