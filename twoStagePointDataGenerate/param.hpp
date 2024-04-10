@@ -125,7 +125,8 @@ struct ParaSys {
 	uint16_t RangeCell_left;
 	uint16_t RangeCell_right;
 	uint16_t VelocityCell_left;
-	uint16_t VelocityCell_right;
+	uint16_t VelocityCell_right; 
+	uint16_t waveform_option;
 };
 
 struct Virtual_array {

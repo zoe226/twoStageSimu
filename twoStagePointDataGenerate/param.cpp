@@ -333,6 +333,7 @@ void get_info(std::string filename, BinFile& bin_file, Virtual_array& virtual_ar
 	bin_file.para_sys.plot_option = 0;
 	bin_file.para_sys.work_mode = 0;
 	bin_file.para_sys.frame_type = 0;
+	bin_file.para_sys.waveform_option = 1;
 
 	parseDataFile(buffer, bin_file);
 

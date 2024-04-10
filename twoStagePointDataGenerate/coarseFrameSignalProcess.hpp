@@ -1,5 +1,6 @@
 #include "param.hpp"
 
+void findDuplicates(vector<uint16_t>& output, const std::vector<uint16_t>& nums1, const std::vector<uint16_t>& nums2);
 void rectWin(vector<float>& win_rect, uint16_t N);
 void hanningWin(vector<float>& win_hanning, uint16_t N);
 void hammingWin(vector<float>& win_hamming, uint16_t N);
