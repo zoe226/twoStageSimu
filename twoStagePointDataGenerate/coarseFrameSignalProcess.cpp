@@ -8,6 +8,168 @@
 #include <cmath>
 #include <unordered_set>
 
+void func_winA_process(vector<vector<vector<vector<vector<complex<float>>>>>>& winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum, vector<uint8_t>& fft_win_type, uint16_t win_len, uint16_t VirtArrVertGridLen, uint16_t VelocityNum, uint16_t RangeSampleNum, uint16_t waveLocNum, vector<vector<vector<vector<vector<complex<float>>>>>>& result_xNum_yNum_VeloFFTNum_RangeNum)
+{
+	uint8_t wina_type = fft_win_type[2];
+	vector<float> win_Coef(win_len);
+	switch (wina_type)
+	{
+	case 0:
+	{
+		rectWin(win_Coef, win_len);
+		break;
+	}
+	case 1:
+	{
+		hanningWin(win_Coef, win_len);
+		break;
+	}
+	case 2:
+	{
+		hammingWin(win_Coef, win_len);
+		break;
+	}
+	default:
+		break;
+	}
+	for (uint16_t waveLocIdx = 0; waveLocIdx < waveLocNum; waveLocIdx++)
+	{
+		for (uint16_t sampleIdx = 0; sampleIdx < RangeSampleNum; sampleIdx++)
+		{
+			for (uint16_t chirpIdx = 0; chirpIdx < VelocityNum; chirpIdx++)
+			{
+				for (uint16_t yIdx = 0; yIdx < VirtArrVertGridLen; yIdx++)
+				{
+					for (uint16_t xIdx = 0; xIdx < win_len; xIdx++)
+					{
+						winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum[xIdx][yIdx][chirpIdx][sampleIdx][waveLocIdx] = win_Coef[xIdx] * result_xNum_yNum_VeloFFTNum_RangeNum[xIdx][yIdx][chirpIdx][sampleIdx][waveLocIdx];
+					}
+				}
+			}
+		}
+	}
+}
+
+void func_Spatial_Reorder(vector<vector<vector<vector<vector<complex<float>>>>>>& result_xNum_yNum_VeloFFTNum_RangeNum, vector<vector<vector<vector<complex<float>>>>>& FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum, uint8_t Array_option, uint16_t MIMONum, Virtual_array& virtual_array, uint16_t VirtArrHorGridLen, uint16_t VirtArrVertGridLen, uint16_t VelocityNum, uint16_t CoarseRangeNum,uint16_t waveLocNum)
+{
+	vector<vector<vector<vector<complex<float>>>>> ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum(VirtArrHorGridLen * VirtArrVertGridLen, vector<vector<vector<complex<float>>>>(VelocityNum, vector<vector<complex<float>>>(CoarseRangeNum, vector<complex<float>>(waveLocNum, 0.0))));
+	switch (Array_option)
+	{
+	case 0:
+		for (uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
+		{
+			for (uint16_t chirpIdx = 0; chirpIdx < VelocityNum; chirpIdx++) 
+			{
+				for (uint16_t sampleIdx = 0; sampleIdx < CoarseRangeNum; sampleIdx++)
+				{
+					for (uint16_t waveLocIdx = 0; waveLocIdx < waveLocNum; waveLocIdx++)
+					{
+						result_xNum_yNum_VeloFFTNum_RangeNum[mimoIdx][0][chirpIdx][sampleIdx][waveLocIdx] = FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][chirpIdx][sampleIdx][waveLocIdx];
+					}
+				}
+			}
+		}
+	case 1:
+		for (uint16_t chirpIdx = 0; chirpIdx < VelocityNum; chirpIdx++)
+		{
+			for(uint16_t sampleIdx = 0; sampleIdx < CoarseRangeNum; sampleIdx++)
+			{
+				for (uint16_t waveLocIdx = 0; waveLocIdx < waveLocNum; waveLocIdx++)
+				{
+					for(uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
+					{
+						uint16_t  posIdx = virtual_array.pos_in_mat[mimoIdx][1] + 1 + (virtual_array.pos_in_mat[mimoIdx][0] + 1 - 1) * VirtArrVertGridLen - 1;
+						ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum[posIdx][chirpIdx][sampleIdx][waveLocIdx] = FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][chirpIdx][sampleIdx][waveLocIdx];
+					}
+				}
+			}
+		}
+		// MATLAB中waveloc在这里没了,是有问题的
+		for (uint16_t chirpIdx = 0; chirpIdx < VelocityNum; chirpIdx++)
+		{
+			for (uint16_t sampleIdx = 0; sampleIdx < CoarseRangeNum; sampleIdx++)
+			{
+				for (uint16_t waveLocIdx = 0; waveLocIdx < waveLocNum; waveLocIdx++)
+				{
+					for (uint16_t totalIdx = 0; totalIdx < VirtArrHorGridLen*VirtArrVertGridLen; totalIdx++)
+					{
+						uint16_t xIdx = totalIdx/VirtArrVertGridLen;
+						uint16_t yIdx = fmod(totalIdx, VirtArrVertGridLen);
+						result_xNum_yNum_VeloFFTNum_RangeNum[xIdx][yIdx][chirpIdx][sampleIdx][waveLocIdx] = ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum[totalIdx][chirpIdx][sampleIdx][waveLocIdx];
+					}
+				}
+			}
+		}
+	case 2:
+		for (uint16_t chirpIdx = 0; chirpIdx < VelocityNum; chirpIdx++)
+		{
+			for (uint16_t sampleIdx = 0; sampleIdx < CoarseRangeNum; sampleIdx++)
+			{
+				for (uint16_t waveLocIdx = 0; waveLocIdx < waveLocNum; waveLocIdx++)
+				{
+					for (uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
+					{
+						uint16_t  posIdx = virtual_array.pos_in_mat[mimoIdx][1] + 1 + (virtual_array.pos_in_mat[mimoIdx][0] + 1 - 1) * VirtArrVertGridLen - 1;
+						ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum[posIdx][chirpIdx][sampleIdx][waveLocIdx] = FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][chirpIdx][sampleIdx][waveLocIdx];
+					}
+				}
+			}
+		}
+		// MATLAB中waveloc在这里没了,是有问题的
+		for (uint16_t chirpIdx = 0; chirpIdx < VelocityNum; chirpIdx++)
+		{
+			for (uint16_t sampleIdx = 0; sampleIdx < CoarseRangeNum; sampleIdx++)
+			{
+				for (uint16_t waveLocIdx = 0; waveLocIdx < waveLocNum; waveLocIdx++)
+				{
+					for (uint16_t totalIdx = 0; totalIdx < VirtArrHorGridLen * VirtArrVertGridLen; totalIdx++)
+					{
+						uint16_t xIdx = totalIdx / VirtArrVertGridLen;
+						uint16_t yIdx = fmod(totalIdx, VirtArrVertGridLen);
+						result_xNum_yNum_VeloFFTNum_RangeNum[xIdx][yIdx][chirpIdx][sampleIdx][waveLocIdx] = ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum[totalIdx][chirpIdx][sampleIdx][waveLocIdx];
+					}
+				}
+			}
+		}
+	case 3:
+		for (uint16_t chirpIdx = 0; chirpIdx < VelocityNum; chirpIdx++)
+		{
+			for (uint16_t sampleIdx = 0; sampleIdx < CoarseRangeNum; sampleIdx++)
+			{
+				for (uint16_t waveLocIdx = 0; waveLocIdx < waveLocNum; waveLocIdx++)
+				{
+					for (uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
+					{
+						uint16_t  posIdx = virtual_array.pos_in_mat[mimoIdx][1] + 1 + (virtual_array.pos_in_mat[mimoIdx][0] + 1 - 1) * VirtArrVertGridLen - 1;
+						ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum[posIdx][chirpIdx][sampleIdx][waveLocIdx] = FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][chirpIdx][sampleIdx][waveLocIdx];
+					}
+				}
+			}
+		}
+		// MATLAB中waveloc在这里没了,是有问题的
+		for (uint16_t chirpIdx = 0; chirpIdx < VelocityNum; chirpIdx++)
+		{
+			for (uint16_t sampleIdx = 0; sampleIdx < CoarseRangeNum; sampleIdx++)
+			{
+				for (uint16_t waveLocIdx = 0; waveLocIdx < waveLocNum; waveLocIdx++)
+				{
+					for (uint16_t totalIdx = 0; totalIdx < VirtArrHorGridLen * VirtArrVertGridLen; totalIdx++)
+					{
+						uint16_t xIdx = totalIdx / VirtArrVertGridLen;
+						uint16_t yIdx = fmod(totalIdx, VirtArrVertGridLen);
+						result_xNum_yNum_VeloFFTNum_RangeNum[xIdx][yIdx][chirpIdx][sampleIdx][waveLocIdx] = ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum[totalIdx][chirpIdx][sampleIdx][waveLocIdx];
+					}
+				}
+			}
+		}
+	case 4:
+		;
+	default:
+		break;
+	}
+}
+
+
 void func_winD_process(vector<vector<vector<vector<complex<float>>>>>& WinDout_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum,vector<uint8_t>& fft_win_type,uint16_t win_len, uint16_t rangeSampleNum, uint16_t MIMONum, uint16_t waveLocNum, vector<vector<vector<vector<complex<float>>>>>& CoarseRangeFFT_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum) {
 	uint8_t wind_type = fft_win_type[1];
 	vector<float> win_Coef(win_len);
@@ -128,8 +290,8 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 	vector<vector<vector<vector<complex<float>>>>> CoarseRangeFFT_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum(para_sys.VelocityNum,vector<vector<vector<complex<float>>>>(para_sys.CoarseRangeNum,vector<vector<complex<float>>>(MIMONum,vector<complex<float>>(para_sys.waveLocNum,0.0))));
 	vector<vector<vector<vector<complex<float>>>>> WinDout_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum(para_sys.VelocityNum, vector<vector<vector<complex<float>>>>(para_sys.CoarseRangeNum, vector<vector<complex<float>>>(MIMONum, vector<complex<float>>(para_sys.waveLocNum, 0.0))));
 	vector<vector<vector<vector<complex<float>>>>> FFT2D_VeloFFTNum_CoarseRangeBinNum_MIMONum_WaveLocNum(para_sys.VelocityNum, vector<vector<vector<complex<float>>>>(para_sys.CoarseRangeNum, vector<vector<complex<float>>>(MIMONum, vector<complex<float>>(para_sys.waveLocNum,0.0))));
-	vector<vector<vector<vector<complex<float>>>>> SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum(para_sys.AngleHorNum,vector<vector<vector<complex<float>>>>(VirtArrHorGridLen,vector<vector<complex<float>>>(para_sys.VelocityNum,vector<complex<float>>(para_sys.CoarseRangeNum,0.0))));
-	vector<vector<vector<vector<complex<float>>>>> SpatialFFT_AngleVertNum_AngleHorNum_VeloFFTNum_RangeBinNum(para_sys.AngleVertNum,vector<vector<vector<complex<float>>>>(para_sys.AngleHorNum,vector<vector<complex<float>>>(para_sys.VelocityNum,vector<complex<float>>(para_sys.CoarseRangeNum,0.0))));
+	vector<vector<vector<vector<vector<complex<float>>>>>> SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum(para_sys.AngleHorNum,vector<vector<vector<vector<complex<float>>>>>(VirtArrVertGridLen,vector<vector<vector<complex<float>>>>(para_sys.VelocityNum,vector<vector<complex<float>>>(para_sys.CoarseRangeNum,vector<complex<float>>(para_sys.waveLocNum, 0.0)))));
+	//vector<vector<vector<vector<vector<complex<float>>>>>> SpatialFFT_AngleVertNum_AngleHorNum_VeloFFTNum_RangeBinNum(para_sys.AngleVertNum,vector<vector<vector<vector<complex<float>>>>>(para_sys.AngleHorNum,vector<vector<vector<complex<float>>>>(para_sys.VelocityNum,vector<vector<complex<float>>>(para_sys.CoarseRangeNum,vector<complex<float>>(para_sys.waveLocNum, complex<float>(0.0,0.0))))));
 	
 	// signal process
 	uint8_t CoHerAccu_en = 1;
@@ -209,17 +371,15 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 					}
 				}
 			}
-
-
 		}
 		// step2:速度维加窗
 		func_winD_process(WinDout_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum, para_sys.fft_win_type, para_sys.VelocityNum, para_sys.CoarseRangeNum, MIMONum, para_sys.waveLocNum, CoarseRangeFFT_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum);
 		// test code
-		vector<complex<float>>  windChirp(para_sys.CoarseRangeNum);
+		/*vector<complex<float>>  windChirp(para_sys.CoarseRangeNum);
 		for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
 		{
 			windChirp[sampleIdx] = WinDout_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum[5][sampleIdx][24][0];
-		}
+		}*/
 		// step3:速度维FFT
 		for (uint16_t waveIdx = 0; waveIdx < para_sys.waveLocNum; waveIdx++)
 		{
@@ -254,19 +414,110 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 			}
 		}
 		// test code
-		vector<complex<float>> fftdChirp(para_sys.CoarseRangeNum);
+		/*vector<complex<float>> fftdChirp(para_sys.CoarseRangeNum);
 		for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
 		{
 			fftdChirp[sampleIdx] = FFT2D_VeloFFTNum_CoarseRangeBinNum_MIMONum_WaveLocNum[5][sampleIdx][24][0];
-		}
+		}*/
 	}
 	if (CoarseFrame_CFARdim > 2)
 	{
-
+		vector<vector<vector<vector<complex<float>>>>> FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum(MIMONum, vector<vector<vector<complex<float>>>>(para_sys.VelocityNum, vector<vector<complex<float>>>(para_sys.CoarseRangeNum, vector<complex<float>>(para_sys.waveLocNum, 0.0))));
+		vector<vector<vector<vector<vector<complex<float>>>>>> result_xNum_yNum_VeloFFTNum_RangeNum(VirtArrHorGridLen, vector<vector<vector<vector<complex<float>>>>>(VirtArrVertGridLen, vector<vector<vector<complex<float>>>>(para_sys.VelocityNum, vector<vector<complex<float>>>(para_sys.CoarseRangeNum, vector<complex<float>>(para_sys.waveLocNum,0.0)))));
+		vector<vector<vector<vector<vector<complex<float>>>>>> winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum(VirtArrHorGridLen, vector<vector<vector<vector<complex<float>>>>>(VirtArrVertGridLen, vector<vector<vector<complex<float>>>>(para_sys.VelocityNum, vector<vector<complex<float>>>(para_sys.CoarseRangeNum, vector<complex<float>>(para_sys.waveLocNum, 0.0)))));
+		if (DDMA_EN == 1)
+		{
+			;
+		}
+		else
+		{
+			for (uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
+			{
+				for (uint16_t dopplerIdx = 0; dopplerIdx < para_sys.VelocityNum; dopplerIdx ++) 
+				{
+					for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
+					{
+						for (uint16_t waveLocIdx = 0; waveLocIdx < para_sys.waveLocNum; waveLocIdx ++)
+						{
+							FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][dopplerIdx][sampleIdx][waveLocIdx] = FFT2D_VeloFFTNum_CoarseRangeBinNum_MIMONum_WaveLocNum[dopplerIdx][sampleIdx][mimoIdx][waveLocIdx];
+						}
+					}
+				}
+			}
+			//test code
+			/*vector<complex<float>> beforeWinOne(MIMONum);
+			for (uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
+			{
+				beforeWinOne[mimoIdx] = FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][24][46][0];
+			}*/
+			func_Spatial_Reorder(result_xNum_yNum_VeloFFTNum_RangeNum, FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum,para_sys.Array_option,MIMONum,virtual_array,VirtArrHorGridLen,VirtArrVertGridLen,para_sys.VelocityNum,para_sys.CoarseRangeNum,para_sys.waveLocNum);
+			//test code
+			/*vector<complex<float>> afterReorderOne(VirtArrHorGridLen);
+			for (uint16_t xIdx = 0; xIdx < VirtArrHorGridLen; xIdx++)
+			{
+				afterReorderOne[xIdx] = result_xNum_yNum_VeloFFTNum_RangeNum[xIdx][0][56][89][0];
+			}*/
+		}
+		// winA (matlab需要加一个分支，不加窗的分支)
+		func_winA_process(winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum,para_sys.fft_win_type , VirtArrHorGridLen, VirtArrVertGridLen, para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum,result_xNum_yNum_VeloFFTNum_RangeNum);
+		// test code
+		/*vector<complex<float>> winAone(VirtArrHorGridLen);
+		for (uint16_t xIdx = 0; xIdx < VirtArrHorGridLen; xIdx++)
+		{
+			winAone[xIdx] = winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum[xIdx][0][89][40][0];
+		}*/
+		// FFTA
+		for (uint16_t waveLocIdx = 0; waveLocIdx < para_sys.waveLocNum; waveLocIdx++)
+		{
+			for (uint16_t rangeIdx = 0; rangeIdx < para_sys.CoarseRangeNum; rangeIdx++)
+			{
+				for (uint16_t chirpIdx = 0; chirpIdx < para_sys.VelocityNum; chirpIdx++)
+				{
+					for (uint16_t yIdx = 0; yIdx < VirtArrVertGridLen; yIdx++)
+					{
+						fftw_complex* in;
+						fftw_complex* out;
+						fftw_plan pffta;
+						in = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * para_sys.AngleHorNum);
+						out = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * para_sys.AngleHorNum);
+						for (uint16_t xIdx = 0; xIdx < VirtArrHorGridLen; xIdx++)
+						{
+							in[xIdx][0] = real(winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum[xIdx][yIdx][chirpIdx][rangeIdx][waveLocIdx]);
+							in[xIdx][1] = imag(winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum[xIdx][yIdx][chirpIdx][rangeIdx][waveLocIdx]);
+						}
+						for (uint16_t xIdx = VirtArrHorGridLen; xIdx < para_sys.AngleHorNum; xIdx++)
+						{
+							in[xIdx][0] = 0;
+							in[xIdx][1] = 0;
+						}
+						pffta = fftw_plan_dft_1d(para_sys.AngleHorNum, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+						fftw_execute(pffta);
+						for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum / 2; horIdx++)
+						{
+							SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx + para_sys.AngleHorNum / 2][yIdx][chirpIdx][rangeIdx][waveLocIdx] = complex<float>(out[horIdx][0], out[horIdx][1]);
+						}
+						for (uint16_t horIdx = para_sys.AngleHorNum / 2; horIdx < para_sys.AngleHorNum; horIdx++)
+						{
+							SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx - para_sys.AngleHorNum / 2][yIdx][chirpIdx][rangeIdx][waveLocIdx] = complex<float>(out[horIdx][0], out[horIdx][1]);
+						}
+						fftw_destroy_plan(pffta);
+						fftw_free(in);
+						fftw_free(out);
+					}
+				}
+			}		
+		}
+		// test code
+		vector<complex<float>> fftaOne(para_sys.AngleHorNum);
+		for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
+		{
+			fftaOne[horIdx] = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx][0][560][54][0];
+		}
 	}
 	if (CoarseFrame_CFARdim > 3)
 	{
-
+		// 数据量太大暂不实现
+		;
 	}
 
 	// cfar 
@@ -283,10 +534,10 @@ void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>
 		func_winR_process(WinRout_RangeSampleNum_ChirpNum_RxNum, para_sys.fft_win_type, para_sys.RangeSampleNum, para_sys.VelocityNum, para_sys.RxNum, radarInputdata);
 		
 		// test code
-		vector<float> temp(para_sys.RangeSampleNum);
+		/*ector<float> temp(para_sys.RangeSampleNum);
 		for (int i = 0; i < para_sys.RangeSampleNum; i++) {
 			temp[i] = WinRout_RangeSampleNum_ChirpNum_RxNum[i][45][23];
-		}
+		}*/
 
 		// fftr
 		//vector<vector<vector<complex<float>>>> CoarseRangeFFT_SampleNum_ChirpNum_RxNum(para_sys.RangeSampleNum, vector<vector<complex<float>>>(para_sys.VelocityNum, vector<complex<float>>(para_sys.RxNum)));
@@ -311,10 +562,10 @@ void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>
 			}
 		}
 		// test code
-		vector<complex<float>> tempfftr(para_sys.RangeSampleNum/2);
+		/*vector<complex<float>> tempfftr(para_sys.RangeSampleNum/2);
 		for (int i = 0; i < para_sys.RangeSampleNum / 2; i++) {
 			tempfftr[i] = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[i][45][23];
-		}
+		}*/
 	}
 	else if (para_sys.InputHasDonePreProcess == 1) {
 		// reshape 

@@ -1,6 +1,6 @@
 #include "param.hpp"
 
-const uint16_t CoarseFrame_CFARdim = 2;
+const uint16_t CoarseFrame_CFARdim = 3;
 uint16_t FineFrame_CfarDim = 4;
 vector<vector<float>> TOI;
 
