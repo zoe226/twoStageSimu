@@ -290,9 +290,14 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 	vector<vector<vector<vector<complex<float>>>>> CoarseRangeFFT_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum(para_sys.VelocityNum,vector<vector<vector<complex<float>>>>(para_sys.CoarseRangeNum,vector<vector<complex<float>>>(MIMONum,vector<complex<float>>(para_sys.waveLocNum,0.0))));
 	vector<vector<vector<vector<complex<float>>>>> WinDout_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum(para_sys.VelocityNum, vector<vector<vector<complex<float>>>>(para_sys.CoarseRangeNum, vector<vector<complex<float>>>(MIMONum, vector<complex<float>>(para_sys.waveLocNum, 0.0))));
 	vector<vector<vector<vector<complex<float>>>>> FFT2D_VeloFFTNum_CoarseRangeBinNum_MIMONum_WaveLocNum(para_sys.VelocityNum, vector<vector<vector<complex<float>>>>(para_sys.CoarseRangeNum, vector<vector<complex<float>>>(MIMONum, vector<complex<float>>(para_sys.waveLocNum,0.0))));
+	__TIC__(DEFVEC)
 	vector<vector<vector<vector<vector<complex<float>>>>>> SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum(para_sys.AngleHorNum,vector<vector<vector<vector<complex<float>>>>>(VirtArrVertGridLen,vector<vector<vector<complex<float>>>>(para_sys.VelocityNum,vector<vector<complex<float>>>(para_sys.CoarseRangeNum,vector<complex<float>>(para_sys.waveLocNum, 0.0)))));
+	__TOC__(DEFVEC)
 	//vector<vector<vector<vector<vector<complex<float>>>>>> SpatialFFT_AngleVertNum_AngleHorNum_VeloFFTNum_RangeBinNum(para_sys.AngleVertNum,vector<vector<vector<vector<complex<float>>>>>(para_sys.AngleHorNum,vector<vector<vector<complex<float>>>>(para_sys.VelocityNum,vector<vector<complex<float>>>(para_sys.CoarseRangeNum,vector<complex<float>>(para_sys.waveLocNum, complex<float>(0.0,0.0))))));
-	
+	/*__TIC__(DEFVEC)
+	MultiDimensionalVector<complex<float>, 5> SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum({ para_sys.AngleHorNum, VirtArrVertGridLen, para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum });
+	__TOC__(DEFVEC)*/
+
 	// signal process
 	uint8_t CoHerAccu_en = 1;
 	uint8_t DDMA_EN = 0;
@@ -467,6 +472,7 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 			winAone[xIdx] = winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum[xIdx][0][89][40][0];
 		}*/
 		// FFTA
+		__TIC__(USEVEC)
 		for (uint16_t waveLocIdx = 0; waveLocIdx < para_sys.waveLocNum; waveLocIdx++)
 		{
 			for (uint16_t rangeIdx = 0; rangeIdx < para_sys.CoarseRangeNum; rangeIdx++)
@@ -495,10 +501,12 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 						for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum / 2; horIdx++)
 						{
 							SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx + para_sys.AngleHorNum / 2][yIdx][chirpIdx][rangeIdx][waveLocIdx] = complex<float>(out[horIdx][0], out[horIdx][1]);
+							//SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum.set({ uint16_t(horIdx + para_sys.AngleHorNum / 2),yIdx, chirpIdx, rangeIdx, waveLocIdx }, complex<float>(out[horIdx][0], out[horIdx][1]));
 						}
 						for (uint16_t horIdx = para_sys.AngleHorNum / 2; horIdx < para_sys.AngleHorNum; horIdx++)
 						{
 							SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx - para_sys.AngleHorNum / 2][yIdx][chirpIdx][rangeIdx][waveLocIdx] = complex<float>(out[horIdx][0], out[horIdx][1]);
+							//SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum.set({ uint16_t(horIdx - para_sys.AngleHorNum / 2),yIdx,chirpIdx,rangeIdx,waveLocIdx} , complex<float>(out[horIdx][0], out[horIdx][1]));
 						}
 						fftw_destroy_plan(pffta);
 						fftw_free(in);
@@ -507,11 +515,13 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 				}
 			}		
 		}
+		__TOC__(USEVEC)
 		// test code
 		vector<complex<float>> fftaOne(para_sys.AngleHorNum);
 		for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
 		{
 			fftaOne[horIdx] = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx][0][560][54][0];
+			//fftaOne[horIdx] = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum.get({horIdx,0,560,54,0});
 		}
 	}
 	if (CoarseFrame_CFARdim > 3)
@@ -527,6 +537,7 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>>& point_info, const string& filename, ParaSys& para_sys, Virtual_array& virtual_array, unique_ptr<int16_t[]>& radarInputdata, vector<complex<float>>& compensate_mat) {
 
 	vector<vector<vector<complex<float>>>> CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum(para_sys.CoarseRangeNum, vector<vector<complex<float>>>(para_sys.VelocityNum, vector<complex<float>>(para_sys.RxNum)));
+	//MultiDimensionalVector<complex<float>, 3> CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum({ para_sys.CoarseRangeNum ,para_sys.VelocityNum ,para_sys.RxNum });
 
 	if (para_sys.InputHasDonePreProcess == 0) {
 		// winr 
@@ -541,8 +552,8 @@ void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>
 
 		// fftr
 		//vector<vector<vector<complex<float>>>> CoarseRangeFFT_SampleNum_ChirpNum_RxNum(para_sys.RangeSampleNum, vector<vector<complex<float>>>(para_sys.VelocityNum, vector<complex<float>>(para_sys.RxNum)));
-		for (int i = 0; i < para_sys.VelocityNum; i++) {
-			for (int j = 0; j < para_sys.RxNum; j++) {
+		for (uint16_t i = 0; i < para_sys.VelocityNum; i++) {
+			for (uint16_t j = 0; j < para_sys.RxNum; j++) {
 				double* in;
 				fftw_complex* out;
 				fftw_plan pfft;
@@ -553,8 +564,9 @@ void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>
 				}
 				pfft = fftw_plan_dft_r2c_1d(para_sys.RangeSampleNum,in,out,FFTW_ESTIMATE);
 				fftw_execute(pfft);
-				for (int k = 0; k < para_sys.RangeSampleNum/2; k++) {
+				for (uint16_t k = 0; k < para_sys.RangeSampleNum/2; k++) {
 					CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][i][j] = complex<float>(out[k][0],out[k][1]);
+					//CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum.set({k,i,j}, complex<float>(out[k][0], out[k][1]));
 				}
 				fftw_destroy_plan(pfft);
 				fftw_free(in);
