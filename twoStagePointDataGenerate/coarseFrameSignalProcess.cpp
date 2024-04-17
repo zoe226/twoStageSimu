@@ -50,7 +50,7 @@ void func_winA_process(vector<vector<vector<vector<vector<complex<float>>>>>>& w
 	}
 }
 
-void func_Spatial_Reorder(vector<vector<vector<vector<vector<complex<float>>>>>>& result_xNum_yNum_VeloFFTNum_RangeNum, vector<vector<vector<vector<complex<float>>>>>& FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum, uint8_t Array_option, uint16_t MIMONum, Virtual_array& virtual_array, uint16_t VirtArrHorGridLen, uint16_t VirtArrVertGridLen, uint16_t VelocityNum, uint16_t CoarseRangeNum,uint16_t waveLocNum)
+void func_Spatial_Reorder(vector<vector<vector<vector<vector<complex<float>>>>>>& result_xNum_yNum_VeloFFTNum_RangeNum, vector<vector<vector<vector<complex<float>>>>>& FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum, uint8_t Array_option, uint16_t MIMONum, vector<vector<uint16_t>>& pos_in_mat, uint16_t VirtArrHorGridLen, uint16_t VirtArrVertGridLen, uint16_t VelocityNum, uint16_t CoarseRangeNum,uint16_t waveLocNum)
 {
 	vector<vector<vector<vector<complex<float>>>>> ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum(VirtArrHorGridLen * VirtArrVertGridLen, vector<vector<vector<complex<float>>>>(VelocityNum, vector<vector<complex<float>>>(CoarseRangeNum, vector<complex<float>>(waveLocNum, 0.0))));
 	switch (Array_option)
@@ -78,7 +78,7 @@ void func_Spatial_Reorder(vector<vector<vector<vector<vector<complex<float>>>>>>
 				{
 					for(uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
 					{
-						uint16_t  posIdx = virtual_array.pos_in_mat[mimoIdx][1] + 1 + (virtual_array.pos_in_mat[mimoIdx][0] + 1 - 1) * VirtArrVertGridLen - 1;
+						uint16_t  posIdx = pos_in_mat[mimoIdx][1] + 1 + (pos_in_mat[mimoIdx][0] + 1 - 1) * VirtArrVertGridLen - 1;
 						ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum[posIdx][chirpIdx][sampleIdx][waveLocIdx] = FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][chirpIdx][sampleIdx][waveLocIdx];
 					}
 				}
@@ -109,7 +109,7 @@ void func_Spatial_Reorder(vector<vector<vector<vector<vector<complex<float>>>>>>
 				{
 					for (uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
 					{
-						uint16_t  posIdx = virtual_array.pos_in_mat[mimoIdx][1] + 1 + (virtual_array.pos_in_mat[mimoIdx][0] + 1 - 1) * VirtArrVertGridLen - 1;
+						uint16_t  posIdx = pos_in_mat[mimoIdx][1] + 1 + (pos_in_mat[mimoIdx][0] + 1 - 1) * VirtArrVertGridLen - 1;
 						ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum[posIdx][chirpIdx][sampleIdx][waveLocIdx] = FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][chirpIdx][sampleIdx][waveLocIdx];
 					}
 				}
@@ -140,7 +140,7 @@ void func_Spatial_Reorder(vector<vector<vector<vector<vector<complex<float>>>>>>
 				{
 					for (uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
 					{
-						uint16_t  posIdx = virtual_array.pos_in_mat[mimoIdx][1] + 1 + (virtual_array.pos_in_mat[mimoIdx][0] + 1 - 1) * VirtArrVertGridLen - 1;
+						uint16_t  posIdx = pos_in_mat[mimoIdx][1] + 1 + (pos_in_mat[mimoIdx][0] + 1 - 1) * VirtArrVertGridLen - 1;
 						ModifyRDFFTReshape_VirtArrTotalNum_VeloNum_RangeBinNum[posIdx][chirpIdx][sampleIdx][waveLocIdx] = FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][chirpIdx][sampleIdx][waveLocIdx];
 					}
 				}
@@ -432,7 +432,29 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 		vector<vector<vector<vector<vector<complex<float>>>>>> winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum(VirtArrHorGridLen, vector<vector<vector<vector<complex<float>>>>>(VirtArrVertGridLen, vector<vector<vector<complex<float>>>>(para_sys.VelocityNum, vector<vector<complex<float>>>(para_sys.CoarseRangeNum, vector<complex<float>>(para_sys.waveLocNum, 0.0)))));
 		if (DDMA_EN == 1)
 		{
-			;
+			vector<vector<uint16_t>> pos_in_mat_ddma(48, vector<uint16_t>(2));
+			for (uint16_t virIdx = 0; virIdx < 48; virIdx++)
+			{
+				pos_in_mat_ddma[virIdx][0] = (virtual_array.pos_in_mat[virIdx][0] + 1) / 2;
+				pos_in_mat_ddma[virIdx][1] = virtual_array.pos_in_mat[virIdx][1];
+			}
+			uint16_t VirtArrHorGridLen_ddma = 27;
+			uint16_t VirtArrVertGridLen_ddma = 2;
+			for (uint16_t mimoIdx = 0; mimoIdx < MIMONum; mimoIdx++)
+			{
+				for (uint16_t dopplerIdx = 0; dopplerIdx < para_sys.VelocityNum; dopplerIdx++)
+				{
+					for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
+					{
+						for (uint16_t waveLocIdx = 0; waveLocIdx < para_sys.waveLocNum; waveLocIdx++)
+						{
+							FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][dopplerIdx][sampleIdx][waveLocIdx] = FFT2D_VeloFFTNum_CoarseRangeBinNum_MIMONum_WaveLocNum[dopplerIdx][sampleIdx][mimoIdx][waveLocIdx];
+						}
+					}
+				}
+			}
+			func_Spatial_Reorder(result_xNum_yNum_VeloFFTNum_RangeNum, FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum, para_sys.Array_option, MIMONum, pos_in_mat_ddma, VirtArrHorGridLen, VirtArrVertGridLen, para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum);
+
 		}
 		else
 		{
@@ -455,7 +477,7 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 			{
 				beforeWinOne[mimoIdx] = FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum[mimoIdx][24][46][0];
 			}*/
-			func_Spatial_Reorder(result_xNum_yNum_VeloFFTNum_RangeNum, FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum,para_sys.Array_option,MIMONum,virtual_array,VirtArrHorGridLen,VirtArrVertGridLen,para_sys.VelocityNum,para_sys.CoarseRangeNum,para_sys.waveLocNum);
+			func_Spatial_Reorder(result_xNum_yNum_VeloFFTNum_RangeNum, FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum,para_sys.Array_option,MIMONum,virtual_array.pos_in_mat,VirtArrHorGridLen,VirtArrVertGridLen,para_sys.VelocityNum,para_sys.CoarseRangeNum,para_sys.waveLocNum);
 			//test code
 			/*vector<complex<float>> afterReorderOne(VirtArrHorGridLen);
 			for (uint16_t xIdx = 0; xIdx < VirtArrHorGridLen; xIdx++)
