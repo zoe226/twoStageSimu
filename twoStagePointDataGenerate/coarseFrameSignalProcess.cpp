@@ -619,6 +619,33 @@ void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>
 	else {
 		throw invalid_argument("Input value is illegal.");
 	}
+	// test code
+	vector<complex<float>> fftrOutOne(para_sys.CoarseRangeNum);
+	for (size_t i = 0; i < para_sys.CoarseRangeNum; i++)
+	{
+		fftrOutOne[i] = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[i][0][0];
+	}
+	// save the result as a bin file
+	string filename_1dout = "fftrOut.bin";
+	std::ofstream file(filename_1dout, std::ios::out | std::ios::binary);
+	if (!file.is_open()) {
+		std::cerr << "Error: Cannot open file for writing." << std::endl;
+	}
+	for (uint16_t i = 0; i < para_sys.RxNum; i++)
+	{
+		for (uint16_t j = 0; j < para_sys.VelocityNum; j++)
+		{
+			for (size_t k = 0; k < para_sys.CoarseRangeNum; k++)
+			{
+				float real_part = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][j][i].real();
+				float imag_part = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][j][i].imag();
+				file.write(reinterpret_cast<const char*>(&real_part),sizeof(float));
+				file.write(reinterpret_cast<const char*>(&imag_part),sizeof(float));
+			}
 
+		}
+
+	}
+	file.close();
 	FFTD_SpatialFFT_CFAR_CoarseFrame(point_info, TOI, para_sys, virtual_array, compensate_mat, CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum);
 }
