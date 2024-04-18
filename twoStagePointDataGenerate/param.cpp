@@ -189,8 +189,8 @@ void parseDataFile(vector<unsigned char>& inputBuffer, BinFile& bin_file) {
 	memcpy(&bin_file.para_sys.save_process_data, inputBuffer.data() + 338 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum + 20 * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum + 4 * bin_file.para_sys.CoarseRangeNum + 4 * bin_file.para_sys.FineRangeNum + 4 * bin_file.para_sys.VelocityNum + 4 * bin_file.para_sys.AngleHorNum + 4 * bin_file.para_sys.AngleVertNum, 1 * sizeof(unsigned char));
 
 	bin_file.compensate_mat = std::make_unique<float[]>(bin_file.para_sys.TxNum * bin_file.para_sys.RxNum * 2);
-	bin_file.input_data = std::make_unique<int16_t[]>(bin_file.para_sys.RxNum * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum * bin_file.para_sys.RangeSampleNum * 2);
 	memcpy(bin_file.compensate_mat.get(), inputBuffer.data() + 305 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum + 12 * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum + 4 * bin_file.para_sys.CoarseRangeNum + 4 * bin_file.para_sys.FineRangeNum + 4 * bin_file.para_sys.VelocityNum + 4 * bin_file.para_sys.AngleHorNum + 4 * bin_file.para_sys.AngleVertNum, 4 * sizeof(unsigned char) * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum * 2);
+	bin_file.input_data = std::make_unique<int16_t[]>(bin_file.para_sys.RxNum * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum * bin_file.para_sys.RangeSampleNum * 2);
 	memcpy(bin_file.input_data.get(), inputBuffer.data() + 3328 + 340 + 6 * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum + 20 * bin_file.para_sys.TxNum * bin_file.para_sys.RxNum + 4 * bin_file.para_sys.CoarseRangeNum + 4 * bin_file.para_sys.FineRangeNum + 4 * bin_file.para_sys.VelocityNum + 4 * bin_file.para_sys.AngleHorNum + 4 * bin_file.para_sys.AngleVertNum, 2 * sizeof(unsigned char) * bin_file.para_sys.RxNum * bin_file.para_sys.TxNum * bin_file.para_sys.TxReuseNum * bin_file.para_sys.RangeSampleNum * 2);
 }
 void getDetPara(DetPara& det_para, ParaSys& para_sys) {

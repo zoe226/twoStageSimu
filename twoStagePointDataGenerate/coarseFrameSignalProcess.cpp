@@ -560,7 +560,6 @@ void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>
 
 	vector<vector<vector<complex<float>>>> CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum(para_sys.CoarseRangeNum, vector<vector<complex<float>>>(para_sys.VelocityNum, vector<complex<float>>(para_sys.RxNum)));
 	//MultiDimensionalVector<complex<float>, 3> CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum({ para_sys.CoarseRangeNum ,para_sys.VelocityNum ,para_sys.RxNum });
-
 	if (para_sys.InputHasDonePreProcess == 0) {
 		// winr 
 		vector<vector<vector<float>>> WinRout_RangeSampleNum_ChirpNum_RxNum(para_sys.RangeSampleNum, vector<vector<float>>(para_sys.VelocityNum, vector<float>(para_sys.RxNum)));
@@ -602,14 +601,15 @@ void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>
 		}*/
 	}
 	else if (para_sys.InputHasDonePreProcess == 1) {
-		// reshape,此处有个问题，radarInputData不是整数，而是复数类型，如何解决。 
+		// reshape，复数的实部和虚部顺序存储
 		for (uint16_t i = 0; i < para_sys.VelocityNum; i++)
 		{
 			for (uint16_t j = 0; j < para_sys.RxNum; j++)
 			{
 				for (uint16_t k = 0; k < para_sys.CoarseRangeNum; k++)
 				{
-					CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][i][j] = radarInputdata[k + j * para_sys.CoarseRangeNum + i * para_sys.CoarseRangeNum * para_sys.RxNum];
+					CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][i][j].real(radarInputdata[2 * k + j * para_sys.CoarseRangeNum + i * para_sys.CoarseRangeNum * para_sys.RxNum]);
+					CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][i][j].imag(radarInputdata[2 * k + 1 + j * para_sys.CoarseRangeNum + i * para_sys.CoarseRangeNum * para_sys.RxNum]);
 				}
 
 			}
