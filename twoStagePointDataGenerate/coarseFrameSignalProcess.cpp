@@ -602,8 +602,19 @@ void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>
 		}*/
 	}
 	else if (para_sys.InputHasDonePreProcess == 1) {
-		// reshape 
+		// reshape,此处有个问题，radarInputData不是整数，而是复数类型，如何解决。 
+		for (uint16_t i = 0; i < para_sys.VelocityNum; i++)
+		{
+			for (uint16_t j = 0; j < para_sys.RxNum; j++)
+			{
+				for (uint16_t k = 0; k < para_sys.CoarseRangeNum; k++)
+				{
+					CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][i][j] = radarInputdata[k + j * para_sys.CoarseRangeNum + i * para_sys.CoarseRangeNum * para_sys.RxNum];
+				}
 
+			}
+
+		}
 	}
 	else {
 		throw invalid_argument("Input value is illegal.");
