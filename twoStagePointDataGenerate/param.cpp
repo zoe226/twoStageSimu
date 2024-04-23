@@ -3,6 +3,9 @@
 const uint16_t CoarseFrame_CFARdim = 3;
 uint16_t FineFrame_CfarDim = 4;
 vector<vector<float>> TOI;
+vector<float> R_Threshold1_u9(32, 0.0);
+vector<float> V_Threshold1_u9(16, 0.0);
+vector<float> PeakThreshold1_u30(32, 0.0);
 
 void  get_virtual_array(Virtual_array& virtual_array, const vector<int16_t>& rx_x_pos_renorm, const vector<int16_t>& rx_y_pos_renorm, const vector<int16_t>& tx_x_pos_renorm, const vector<int16_t>& tx_y_pos_renorm) {
 	uint16_t Tx_num = size(tx_x_pos_renorm);
@@ -261,7 +264,7 @@ void getDetPara(DetPara& det_para, ParaSys& para_sys) {
 	det_para.DetectCell_VIndex_Max_u11 = det_para.ChirpNum_u11;
 
 	string str_cfar = "11";
-	det_para.CFARTypeSwitch_u2.assign(str_cfar.begin(), str_cfar.end());
+	det_para.CFARTypeSwitch_u2 = str_cfar;
 	det_para.LogicTestFlag_u1 = 1;
 	det_para.cfar_para.ProCellNum_R_u2 = 3;
 	det_para.cfar_para.ProCellNum_V_u2 = 3;

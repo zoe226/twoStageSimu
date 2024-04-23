@@ -8,6 +8,208 @@
 #include <cmath>
 #include <unordered_set>
 
+extern vector<float> R_Threshold1_u9;
+extern vector<float> V_Threshold1_u9;
+extern vector<float> PeakThreshold1_u30;
+
+void func_PeakSearch_And_CFAR_2D_Cross(uint16_t TarNum_Detected, vector<uint16_t>& peak_R, vector<uint16_t>& peak_V, vector<float>& peak_Val, vector<float>& peak_SNR, DetPara& det_para, MultiDimensionalVector<float,2>& SpatialFFTVelSel_VeloNum_RangeNum)
+{
+	uint16_t TarCountLimit_u9 = 200;
+	uint8_t PeakSearchWin = 1;
+	uint16_t ii = 0;
+	for (uint16_t Index_R = det_para.DetectCell_RIndex_Min_u10-1; Index_R < det_para.DetectCell_RIndex_Max_u10; Index_R++)
+	{
+		for (uint16_t Index_V = det_para.DetectCell_VIndex_Min_u11-1; Index_V < det_para.DetectCell_VIndex_Max_u11; Index_V++)
+		{
+			float DataToDetect = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,Index_R });
+			uint16_t V_Upboundary_u11 = 0;
+			uint16_t V_Backboundary_u11 = 0;
+			uint8_t Logic_PeakCondition = 0;
+			if (Index_V < det_para.ChirpNum_u11-1)
+			{
+				V_Upboundary_u11 = Index_V + 1;
+			}
+			else
+			{
+				V_Upboundary_u11 = 0;
+			}
+			if (Index_V > 0)
+			{
+				V_Backboundary_u11 = Index_V - 1;
+			}
+			else
+			{
+				V_Backboundary_u11 = det_para.ChirpNum_u11 - 1;
+			}
+			if (det_para.PeakS_Enable_u1 == 1)
+			{
+				if (PeakSearchWin == 0)
+				{
+					if (Index_R == 0)
+					{
+						uint16_t R_front = Index_R + 1;
+						if (DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,R_front}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({ V_Upboundary_u11,Index_R }) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,Index_R}))
+						{
+							Logic_PeakCondition = 1;
+						}
+					}
+					else if (Index_R == det_para.RangeCellNum_u10 - 1)
+					{
+						uint16_t R_back = Index_R - 1;
+						if (DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,R_back}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({ V_Upboundary_u11,Index_R }) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,Index_R}))
+						{
+							Logic_PeakCondition = 1;
+						}
+					}
+					else
+					{
+						uint16_t R_front = Index_R + 1;
+						uint16_t R_back = Index_R - 1;
+						if (DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,R_back }) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,R_front }) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Upboundary_u11,Index_R}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,Index_R}))
+						{
+							Logic_PeakCondition = 1;
+						}
+					}
+				}
+				else
+				{
+					if (Index_R == 1)
+					{
+						uint16_t R_front = Index_R + 1;
+						if (DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,R_front}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,R_front}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Upboundary_u11,R_front}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Upboundary_u11,Index_R}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,Index_R}))
+						{
+							Logic_PeakCondition = 1;
+						}
+					}
+					else if (Index_R == det_para.RangeCellNum_u10)
+					{
+						uint16_t R_back = Index_R - 1;
+						if (DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,R_back}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Upboundary_u11,R_back}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,R_back}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({ V_Upboundary_u11,Index_R }) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,Index_R}))
+						{
+							Logic_PeakCondition = 1;
+						}
+					}
+					else
+					{
+						uint16_t R_back = Index_R - 1;
+						uint16_t R_front = Index_R + 1;
+						if (DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,R_back}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Upboundary_u11,R_back}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,R_back}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,R_front}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Upboundary_u11,R_front}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,R_front}) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({ V_Upboundary_u11,Index_R }) && \
+							DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({V_Backboundary_u11,Index_R}))
+						{
+							Logic_PeakCondition = 1;
+						}
+
+					}
+				}
+			}
+			else
+			{
+				Logic_PeakCondition = 1;
+			}
+			uint8_t ptIdx = ceil(Index_R/(det_para.RangeCellNum_u10/32));
+			if (Logic_PeakCondition == 1 && DataToDetect < PeakThreshold1_u30[ptIdx])
+			{
+				Logic_PeakCondition = 0;
+			}
+			if (Logic_PeakCondition == 1)
+			{
+				uint8_t typeSwitch = 0;
+				uint8_t IsTarget_2D = 0;
+				float SNR = 0.0;
+				if (det_para.CFARTypeSwitch_u2.compare("00"))
+				{
+					typeSwitch = 0;
+				}
+				else if(det_para.CFARTypeSwitch_u2.compare("01"))
+				{
+					typeSwitch = 1;
+				}
+				else if (det_para.CFARTypeSwitch_u2.compare("10"))
+				{
+					typeSwitch = 2;
+				}
+				else if (det_para.CFARTypeSwitch_u2.compare("11"))
+				{
+					typeSwitch = 3;
+				}
+				switch (typeSwitch)
+				{
+				case 0:
+					;
+				case 1:
+					;
+				case 2:
+					;
+				case 3:
+					//cfarOS_cal_single_point_2D_Cross();
+				default:
+					break;
+				}
+				if (IsTarget_2D == 1)
+				{
+					ii = ii + 1;
+					peak_R.push_back(Index_R);
+					peak_V.push_back(Index_V);
+					peak_Val.push_back(DataToDetect);
+					SNR = 20 * log10(SNR);
+					peak_SNR.push_back(SNR);
+				}
+				if (ii > TarCountLimit_u9 - 1)
+				{
+					break;
+				}
+			}
+		}
+		if (ii > TarCountLimit_u9 - 1)
+		{
+			break;
+		}
+	}
+}
+
+void cfar3d_cal_across_ArbitaryDim(MultiDimensionalVector<float, 2>& SpatialFFTVelSel_VeloNum_RangeNum, MultiDimensionalVector<float, 3>& DataInput, uint8_t SqueezeDim, uint8_t cfar_include_order, uint8_t cfar_exclude_order, float min_snr, uint8_t Switch3DMode, uint16_t horNum, uint16_t chirpNum, uint16_t sampleNum)
+{
+	// 方位维取最大值
+	for (uint16_t chirpIdx = 0; chirpIdx < chirpNum; chirpIdx++)
+	{
+		for (uint16_t sampleIdx = 0; sampleIdx < sampleNum; sampleIdx++)
+		{
+			float tempMax = INT32_MIN;
+			for (uint16_t horIdx = 0; horIdx < horNum; horIdx++)
+			{
+				if (DataInput.get({ horIdx,chirpIdx,sampleIdx }) > tempMax)
+				{
+					tempMax = DataInput.get({ horIdx,chirpIdx,sampleIdx });
+				}
+			}
+			SpatialFFTVelSel_VeloNum_RangeNum.set({ chirpIdx,sampleIdx }, tempMax);
+		}
+	}
+
+	// ...
+}
+
 void func_winA_process(vector<vector<vector<vector<vector<complex<float>>>>>>& winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum, vector<uint8_t>& fft_win_type, uint16_t win_len, uint16_t VirtArrVertGridLen, uint16_t VelocityNum, uint16_t RangeSampleNum, uint16_t waveLocNum, vector<vector<vector<vector<vector<complex<float>>>>>>& result_xNum_yNum_VeloFFTNum_RangeNum)
 {
 	uint8_t wina_type = fft_win_type[2];
@@ -553,7 +755,168 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 	}
 
 	// cfar 
+	for (uint16_t i = 0; i < 32; i++)
+	{
+		R_Threshold1_u9[i] = 5;
+		PeakThreshold1_u30[i] = 0;
+	}
+	for (uint16_t i = 0; i < 16; i++)
+	{
+		V_Threshold1_u9[i] = 8;
+	}
+	switch (CoarseFrame_CFARdim)
+	{
+	case 2:
+		;
+	case 3:
+		// 质心提取
+		if (DDMA_EN == 1)
+		{
+			MultiDimensionalVector<float, 5> SpatialFFTA_ABS_AngleHorNum_yNum_VeloFFTNum_RangeNum({ para_sys.AngleHorNum, VirtArrVertGridLen, para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum });
+			MultiDimensionalVector<float, 4> SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum({ para_sys.AngleHorNum, para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum });
+			MultiDimensionalVector<float, 3> SpatialFFTA_ABSMeanMax_VeloFFTNum_RangeNum({ para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum });
 
+			for (uint16_t waveIdx = 0; waveIdx < para_sys.waveLocNum; waveIdx++)
+			{
+				for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
+				{
+					for (uint16_t chirpIdx = 0; chirpIdx < para_sys.VelocityNum; chirpIdx++)
+					{
+						for (uint16_t yIdx = 0; yIdx < VirtArrVertGridLen; yIdx++)
+						{
+							for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
+							{
+								SpatialFFTA_ABS_AngleHorNum_yNum_VeloFFTNum_RangeNum.set({ horIdx,yIdx,chirpIdx,sampleIdx,waveIdx }, abs(SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx][yIdx][chirpIdx][sampleIdx][waveIdx]));
+							}
+						}
+					}
+				}
+			}
+			for (uint16_t waveIdx = 0; waveIdx < para_sys.waveLocNum; waveIdx++)
+			{
+				for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
+				{
+					for (uint16_t chirpIdx = 0; chirpIdx < para_sys.VelocityNum; chirpIdx++)
+					{
+						for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
+						{
+							float tempMean = 0;
+							for (uint16_t yIdx = 0; yIdx < VirtArrVertGridLen; yIdx++)
+							{
+								tempMean = tempMean + SpatialFFTA_ABS_AngleHorNum_yNum_VeloFFTNum_RangeNum.get({ horIdx,yIdx,chirpIdx,sampleIdx,waveIdx });
+							}
+							SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum.set({ horIdx,chirpIdx,sampleIdx,waveIdx }, tempMean/ VirtArrVertGridLen);
+						}
+					}
+				}
+			}
+			for (uint16_t waveIdx = 0; waveIdx < para_sys.waveLocNum; waveIdx++)
+			{
+				for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
+				{
+					for (uint16_t chirpIdx = 0; chirpIdx < para_sys.VelocityNum; chirpIdx++)
+					{
+						float maxValue = INT32_MIN;
+						for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
+						{
+							if (SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum.get({horIdx,chirpIdx,sampleIdx,waveIdx}) > maxValue)
+							{
+								maxValue = SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum.get({ horIdx,chirpIdx,sampleIdx,waveIdx });
+							}
+						}
+						SpatialFFTA_ABSMeanMax_VeloFFTNum_RangeNum.set({chirpIdx,sampleIdx,waveIdx},maxValue);
+					}
+				}
+			}
+			// test code
+			vector<float> tempAbs(para_sys.CoarseRangeNum);
+			/*for (size_t i = 0; i < para_sys.CoarseRangeNum; i++)
+			{
+				tempAbs[i] = SpatialFFTA_ABSMeanMax_VeloFFTNum_RangeNum.get({ 15, i, 0 });
+			}*/
+		}
+		else
+		{
+			MultiDimensionalVector<float, 5> SpatialFFTA_ABS_AngleHorNum_yNum_VeloFFTNum_RangeNum({ para_sys.AngleHorNum, VirtArrVertGridLen, para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum });
+			MultiDimensionalVector<float, 4> SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum({ para_sys.AngleHorNum, para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum });
+			for (uint16_t waveIdx = 0; waveIdx < para_sys.waveLocNum; waveIdx++)
+			{
+				for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
+				{
+					for (uint16_t chirpIdx = 0; chirpIdx < para_sys.VelocityNum; chirpIdx++)
+					{
+						for (uint16_t yIdx = 0; yIdx < VirtArrVertGridLen; yIdx++)
+						{
+							for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
+							{
+								SpatialFFTA_ABS_AngleHorNum_yNum_VeloFFTNum_RangeNum.set({ horIdx,yIdx,chirpIdx,sampleIdx,waveIdx }, abs(SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx][yIdx][chirpIdx][sampleIdx][waveIdx]));
+							}
+						}
+					}
+				}
+			}
+			for (uint16_t waveIdx = 0; waveIdx < para_sys.waveLocNum; waveIdx++)
+			{
+				for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
+				{
+					for (uint16_t chirpIdx = 0; chirpIdx < para_sys.VelocityNum; chirpIdx++)
+					{
+						for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
+						{
+							float tempMean = 0;
+							for (uint16_t yIdx = 0; yIdx < VirtArrVertGridLen; yIdx++)
+							{
+								tempMean = tempMean + SpatialFFTA_ABS_AngleHorNum_yNum_VeloFFTNum_RangeNum.get({ horIdx,yIdx,chirpIdx,sampleIdx,waveIdx });
+							}
+							SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum.set({ horIdx,chirpIdx,sampleIdx,waveIdx }, tempMean / VirtArrVertGridLen);
+						}
+					}
+				}
+			}
+			// test code
+			/*vector<float> fft3dAbs(para_sys.CoarseRangeNum);
+			for (size_t i = 0; i < para_sys.CoarseRangeNum; i++)
+			{
+				fft3dAbs[i] = SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum.get({32,15,i,0});
+			}*/
+			uint8_t Switch3DMode = 0;
+			uint8_t SqueezeDim = 1;
+			for (uint16_t Beamcnt = 0; Beamcnt < para_sys.waveLocNum; Beamcnt++)
+			{
+				MultiDimensionalVector<float, 2> SpatialFFTVelSel_VeloNum_RangeNum({ para_sys.VelocityNum, para_sys.CoarseRangeNum });
+				MultiDimensionalVector<float, 3> DataInput({ para_sys.AngleHorNum, para_sys.VelocityNum, para_sys.CoarseRangeNum });
+				for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
+				{
+					for (uint16_t chirpIdx = 0; chirpIdx < para_sys.VelocityNum; chirpIdx++)
+					{
+						for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
+						{
+							DataInput.set({ horIdx,chirpIdx,sampleIdx }, SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum.get({ horIdx,chirpIdx,sampleIdx,Beamcnt }));
+						}
+					}
+				}
+				cfar3d_cal_across_ArbitaryDim(SpatialFFTVelSel_VeloNum_RangeNum,DataInput,SqueezeDim,para_sys.cfar_include_order[2], para_sys.cfar_exclude_order[2], para_sys.snr_dB_different_dim[2], Switch3DMode, para_sys.AngleHorNum,para_sys.VelocityNum,para_sys.CoarseRangeNum);
+				// test code
+				/*vector<float> max3dOne(para_sys.CoarseRangeNum);
+				for (uint16_t i = 0; i < para_sys.CoarseRangeNum; i++)
+				{
+					max3dOne[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({56,i});
+				}*/
+				uint16_t TarNum_Detected = 0;
+				vector<uint16_t> peak_R;
+				vector<uint16_t> peak_V;
+				vector<float> peak_Val;
+				vector<float> peak_SNR;
+				func_PeakSearch_And_CFAR_2D_Cross(TarNum_Detected,peak_R,peak_V,peak_Val,peak_SNR,para_sys.det_para, SpatialFFTVelSel_VeloNum_RangeNum);
+			}
+		}
+		// 生成联通区域
+
+	case 4:
+		// 暂不实现
+	default:
+		break;
+	}
 }
 
 void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>>& point_info, const string& filename, ParaSys& para_sys, Virtual_array& virtual_array, unique_ptr<int16_t[]>& radarInputdata, vector<complex<float>>& compensate_mat) {

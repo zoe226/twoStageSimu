@@ -64,6 +64,8 @@ private:
     std::vector<T> data_;
 };
 
+void func_PeakSearch_And_CFAR_2D_Cross(uint16_t TarNum_Detected, vector<uint16_t>& peak_R, vector<uint16_t>& peak_V, vector<float>& peak_Val, vector<float>& peak_SNR, DetPara& det_para, MultiDimensionalVector<float, 2>& SpatialFFTVelSel_VeloNum_RangeNum);
+void cfar3d_cal_across_ArbitaryDim(MultiDimensionalVector<float, 2>& SpatialFFTVelSel_VeloNum_RangeNum, MultiDimensionalVector<float, 3>& DataInput, uint8_t SqueezeDim, uint8_t cfar_include_order, uint8_t cfar_exclude_order, float min_snr, uint8_t Switch3DMode, uint16_t horNum, uint16_t chirpNum, uint16_t sampleNum);
 void func_winA_process(vector<vector<vector<vector<vector<complex<float>>>>>>& winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum, vector<uint8_t>& fft_win_type, uint16_t win_len, uint16_t VirtArrVertGridLen, uint16_t VelocityNum, uint16_t RangeSampleNum, uint16_t waveLocNum, vector<vector<vector<vector<vector<complex<float>>>>>>& result_xNum_yNum_VeloFFTNum_RangeNum);
 void func_Spatial_Reorder(vector<vector<vector<vector<vector<complex<float>>>>>>& result_xNum_yNum_VeloFFTNum_RangeNum, vector<vector<vector<vector<complex<float>>>>>& FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum, uint8_t Array_option, uint16_t MIMONum, vector<vector<uint16_t>>& pos_in_mat, uint16_t VirtArrHorGridLen, uint16_t VirtArrVertGridLen, uint16_t VelocityNum, uint16_t CoarseRangeNum, uint16_t waveLocNum);
 void func_winD_process(vector<vector<vector<vector<complex<float>>>>>& WinDout_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum, vector<uint8_t>& fft_win_type, uint16_t win_len, uint16_t rangeSampleNum, uint16_t MIMONum, uint16_t waveLocNum, vector<vector<vector<vector<complex<float>>>>>& CoarseRangeFFT_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum);

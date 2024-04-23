@@ -62,7 +62,7 @@ struct DetPara {
 	uint16_t DetectCell_RIndex_Max_u10;
 	uint16_t DetectCell_VIndex_Min_u11;
 	uint16_t DetectCell_VIndex_Max_u11;
-	vector<char> CFARTypeSwitch_u2; // (2);'11'
+	string CFARTypeSwitch_u2; // (2);'11'
 	uint8_t LogicTestFlag_u1;
 	CFAR cfar_para;
 	uint8_t Loc_OSCFAR_u5;
