@@ -334,7 +334,7 @@ void get_info(std::string filename, BinFile& bin_file, Virtual_array& virtual_ar
 	bin_file.para_sys.cfar_2d_tf = 1.8;
 	bin_file.para_sys.lightSpeed = 299792458.0f;
 	bin_file.para_sys.plot_option = 0;
-	bin_file.para_sys.work_mode = 0;
+	bin_file.para_sys.work_mode = 1;
 	bin_file.para_sys.frame_type = 0;
 	bin_file.para_sys.waveform_option = 1;
 

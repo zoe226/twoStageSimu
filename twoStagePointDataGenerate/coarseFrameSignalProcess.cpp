@@ -7,12 +7,497 @@
 #include <algorithm>
 #include <cmath>
 #include <unordered_set>
+#include <algorithm>
 
 extern vector<float> R_Threshold1_u9;
 extern vector<float> V_Threshold1_u9;
 extern vector<float> PeakThreshold1_u30;
 
-void func_PeakSearch_And_CFAR_2D_Cross(uint16_t TarNum_Detected, vector<uint16_t>& peak_R, vector<uint16_t>& peak_V, vector<float>& peak_Val, vector<float>& peak_SNR, DetPara& det_para, MultiDimensionalVector<float,2>& SpatialFFTVelSel_VeloNum_RangeNum)
+uint8_t func_DetermineEachElement(uint8_t LocComp_u5, uint8_t LeftLoc_u1, float Cell_ToCompare_u30, vector<float>& DataSet_RefCell_u30, uint16_t RefCellNum_u6) {
+	uint8_t IsData_u1 = 0;
+	uint8_t flag_Not_u1 = 0;
+	uint8_t Data_Equal_u5 = 0;
+	uint8_t Count_u5 = 0;
+	for (size_t Loop2 = 0; Loop2 < RefCellNum_u6; Loop2++)
+	{
+		float Cell_Temp_u30 = DataSet_RefCell_u30[Loop2]; 
+		if (LeftLoc_u1 == 1)
+		{
+			if (Cell_ToCompare_u30 > Cell_Temp_u30)
+			{
+				Count_u5 = Count_u5 + 1;
+			}
+		}
+		else
+		{
+			if (Cell_ToCompare_u30 < Cell_Temp_u30)
+			{
+				Count_u5 = Count_u5 + 1;
+			}
+		}
+		if (Cell_ToCompare_u30 == Cell_Temp_u30)
+		{
+			Data_Equal_u5 = Data_Equal_u5 + 1;
+		}
+		if (Count_u5 > LocComp_u5)
+		{
+			flag_Not_u1 = 1;
+			break;
+		}
+	}
+	if (flag_Not_u1 == 0)
+	{
+		if (Data_Equal_u5 == 1)
+		{
+			if (Count_u5 == LocComp_u5)
+			{
+				IsData_u1 = 1;
+			}
+		}
+		else
+		{
+			uint8_t NumLess_u5 = Count_u5 + Data_Equal_u5;
+			if (NumLess_u5 > LocComp_u5)
+			{
+				IsData_u1 = 1;
+			}
+		}
+	}
+	return IsData_u1;
+}
+
+float func_ObtainOSLocData(uint8_t Loc_OSCFAR_u5, vector<float>& DataSet_RefCell_u30, uint16_t RefCellNum_u6)
+{
+	float Data_OSLoc_u30;
+	Data_OSLoc_u30 = DataSet_RefCell_u30[RefCellNum_u6 - 1];
+	uint8_t LeftLoc_u1 = 1;
+	uint8_t LocComp_u5 = Loc_OSCFAR_u5 - 1;
+	uint8_t middleLoc = floor(RefCellNum_u6 / 2);
+	if (Loc_OSCFAR_u5 > middleLoc)
+	{
+		LeftLoc_u1 = 0;
+		LocComp_u5 = RefCellNum_u6 - Loc_OSCFAR_u5;
+	}
+	for (size_t Loop1 = 0; Loop1 < RefCellNum_u6-1; Loop1++)
+	{
+		float Cell_ToCompare_u30 = DataSet_RefCell_u30[Loop1];
+		uint8_t IsData_u1 = 0;
+		IsData_u1 = func_DetermineEachElement(LocComp_u5,LeftLoc_u1,Cell_ToCompare_u30,DataSet_RefCell_u30,RefCellNum_u6);
+		if (IsData_u1 == 1)
+		{
+			Data_OSLoc_u30 = Cell_ToCompare_u30;
+			break;
+		}
+	}
+	return Data_OSLoc_u30;
+}
+
+void func_CFARChM_OS_1D_V(uint8_t& IsTarget_1D_V_u1, float& VSNR_u11, DetPara& det_para, float DataToDetect, uint16_t Index_V, uint16_t Index_R, MultiDimensionalVector<float, 2>& SpatialFFTVelSel_VeloNum_RangeNum)
+{
+	uint8_t Loc_OSCFAR_u5 = det_para.Loc_OSCFAR_u5;
+	uint8_t V_Threshold_Num_u6 = 16;
+	vector<float> DataSet_RefCell_u30(32, 0.0);
+	IsTarget_1D_V_u1 = 0;
+	VSNR_u11 = 0;
+	float Data_OSLoc_u30;
+	uint8_t Logic1_u1 = 0;
+	uint8_t Logic2_u1 = 0;
+	uint8_t Logic3_u1 = 0;
+	uint8_t Logic4_u1 = 0;
+	uint8_t Logic5_u1 = 0;
+	uint16_t UpBoundary_u9 = 1 + det_para.cfar_para.ProCellNum_V_u2 + det_para.cfar_para.RefCellNum_1D_u5;
+	uint16_t DownBoundary_u10 = det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_R_u2 - det_para.cfar_para.RefCellNum_1D_u5;
+	uint16_t RefCellNum_u6 = 2 * det_para.cfar_para.RefCellNum_1D_u5;
+	if (UpBoundary_u9 >= DownBoundary_u10)
+	{
+		det_para.cfar_para.ProCellNum_V_u2 = 1;
+		det_para.cfar_para.RefCellNum_1D_u5 = 1;
+		uint16_t UpBoundary_u9 = 1 + det_para.cfar_para.ProCellNum_V_u2 + det_para.cfar_para.RefCellNum_1D_u5;
+		uint16_t DownBoundary_u10 = det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_R_u2 - det_para.cfar_para.RefCellNum_1D_u5;
+	}
+	if (Index_V >= 0  && Index_V <= 0 + det_para.cfar_para.ProCellNum_V_u2)
+	{
+		Logic1_u1 = 1;
+	}
+	if (Index_V > (0 + det_para.cfar_para.ProCellNum_V_u2) && Index_V < 0 + det_para.cfar_para.ProCellNum_V_u2 + det_para.cfar_para.RefCellNum_1D_u5)
+	{
+		Logic2_u1 = 1;
+	}
+	if (Index_V >= 0 + det_para.cfar_para.ProCellNum_V_u2 + det_para.cfar_para.RefCellNum_1D_u5 && Index_V <= det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_V_u2 - det_para.cfar_para.RefCellNum_1D_u5 - 1)
+	{
+		Logic3_u1 = 1;
+	}
+	if (Index_V > det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_V_u2 - det_para.cfar_para.RefCellNum_1D_u5 - 1 && Index_V < det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_V_u2 - 1)
+	{
+		Logic4_u1 = 1;
+	}
+	if (Index_V >= det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_V_u2 - 1)
+	{
+		Logic5_u1 = 1;
+	}
+	if (Logic1_u1 == 1)
+	{
+		for (size_t i = 0; i < RefCellNum_u6; i++)
+		{
+			if (i % 2 == 1)
+			{
+				uint16_t upIndex = det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_V_u2 - det_para.cfar_para.RefCellNum_1D_u5 + Index_V + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({upIndex,Index_R});
+			}
+			else
+			{
+				uint16_t downIndex = Index_V + det_para.cfar_para.ProCellNum_V_u2 + 1 + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ downIndex,Index_R });
+			}
+		}
+	}
+	else if(Logic2_u1 == 1)
+	{
+		for (size_t i = 0; i < RefCellNum_u6; i++)
+		{
+			if (i % 2 == 1)
+			{
+				uint16_t upIndex = (det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_V_u2 - det_para.cfar_para.RefCellNum_1D_u5 + Index_V + i / 2)%det_para.ChirpNum_u11;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ upIndex,Index_R });
+			}
+			else
+			{
+				uint16_t downIndex = Index_V + det_para.cfar_para.ProCellNum_V_u2 + 1 + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ downIndex,Index_R });
+			}
+		}
+	}
+	else if (Logic3_u1 == 1)
+	{
+		for (size_t i = 0; i < RefCellNum_u6; i++)
+		{
+			if (i % 2 == 1)
+			{
+				uint16_t upIndex = Index_V - det_para.cfar_para.ProCellNum_V_u2 - det_para.cfar_para.RefCellNum_1D_u5 + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ upIndex,Index_R });
+			}
+			else
+			{
+				uint16_t downIndex = Index_V + det_para.cfar_para.ProCellNum_V_u2 + 1 + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ downIndex,Index_R });
+			}
+		}
+	}
+	else if (Logic4_u1 == 1)
+	{
+		for (size_t i = 0; i < RefCellNum_u6; i++)
+		{
+			if (i % 2 == 1)
+			{
+				uint16_t upIndex = Index_V - det_para.cfar_para.ProCellNum_V_u2 - det_para.cfar_para.RefCellNum_1D_u5 + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ upIndex,Index_R });
+			}
+			else
+			{
+				uint16_t downIndex = (Index_V + det_para.cfar_para.ProCellNum_V_u2 + 1 + i / 2)%det_para.ChirpNum_u11;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ downIndex,Index_R });
+			}
+		}
+	}
+	else if (Logic5_u1 == 1)
+	{
+		for (size_t i = 0; i < RefCellNum_u6; i++)
+		{
+			if (i % 2 == 1)
+			{
+				uint16_t upIndex = Index_V - det_para.cfar_para.ProCellNum_V_u2 - det_para.cfar_para.RefCellNum_1D_u5 + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ upIndex,Index_R });
+			}
+			else
+			{
+				uint16_t downIndex = Index_V + det_para.cfar_para.ProCellNum_V_u2 + 1 - det_para.ChirpNum_u11 + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ downIndex,Index_R });
+			}
+		}
+	}
+	if (Loc_OSCFAR_u5 >= RefCellNum_u6)
+	{
+		Loc_OSCFAR_u5 = floor(RefCellNum_u6 / 2) + 1;
+	}
+	Data_OSLoc_u30 = func_ObtainOSLocData(Loc_OSCFAR_u5, DataSet_RefCell_u30, RefCellNum_u6);
+	uint16_t thIdx = floor(Index_V / (det_para.ChirpNum_u11 / V_Threshold_Num_u6));
+	float Threshold2_u39 = V_Threshold1_u9[thIdx] * Data_OSLoc_u30;
+	float CellToDetect_u32 = DataToDetect * 2 * 2;
+	if (CellToDetect_u32 > Threshold2_u39)
+	{
+		IsTarget_1D_V_u1 = 1;
+		VSNR_u11 = DataToDetect / Data_OSLoc_u30;
+	}
+}
+
+void func_CFARChM_OS_1D(uint8_t& IsTarget_1D_R_u1, float& RSNR_u11,DetPara& det_para, float DataToDetect, uint16_t Index_V,uint16_t Index_R, MultiDimensionalVector<float, 2>& SpatialFFTVelSel_VeloNum_RangeNum)
+{
+	uint8_t Loc_OSCFAR_u5 = det_para.Loc_OSCFAR_u5;
+	uint8_t R_Threshold_Num_u6 = 32;
+	vector<float> DataSet_RefCell_u30(32, 0.0);
+	uint8_t Logic1_u1 = 0;
+	uint8_t Logic2_u1 = 0;
+	IsTarget_1D_R_u1 = 0;
+	RSNR_u11 = 0;
+	uint16_t LeftBoundary_u9 = det_para.cfar_para.ProCellNum_R_u2 + det_para.cfar_para.RefCellNum_1D_u5 - 1;
+	uint16_t RightBoundary_u10 = det_para.RangeCellNum_u10 - det_para.cfar_para.ProCellNum_R_u2 - det_para.cfar_para.RefCellNum_1D_u5;
+	uint8_t RefCellNum_u6 = 0;
+	float Data_OSLoc_u30;
+
+	if (LeftBoundary_u9 >= RightBoundary_u10)
+	{
+		det_para.cfar_para.ProCellNum_R_u2 = 1;
+		det_para.cfar_para.RefCellNum_1D_u5 = 1;
+		LeftBoundary_u9 = det_para.cfar_para.ProCellNum_R_u2 + det_para.cfar_para.RefCellNum_1D_u5 - 1;
+		RightBoundary_u10 = det_para.RangeCellNum_u10 - det_para.cfar_para.ProCellNum_R_u2 - det_para.cfar_para.RefCellNum_1D_u5;
+	}
+
+	if (Index_R > LeftBoundary_u9)
+	{
+		Logic1_u1 = 1;
+	}
+	if (Index_R < RightBoundary_u10)
+	{
+		Logic2_u1 = 1;
+	}
+	if (Logic1_u1 == 1 && Logic2_u1 == 1)
+	{
+		RefCellNum_u6 = 2 * det_para.cfar_para.RefCellNum_1D_u5;
+		for (size_t i = 0; i < RefCellNum_u6; i++)
+		{	
+			if ((i%2) == 1)
+			{
+				uint16_t leftRefIndex = Index_R - det_para.cfar_para.ProCellNum_R_u2 - det_para.cfar_para.RefCellNum_1D_u5 + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V, leftRefIndex });
+			}
+			else
+			{
+				uint16_t rightRefIndex = Index_R + det_para.cfar_para.ProCellNum_R_u2 + 1 + i / 2;
+				DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V, rightRefIndex });
+			}
+		}
+	}
+	else if (Logic2_u1 == 1)
+	{
+		RefCellNum_u6 = det_para.cfar_para.RefCellNum_1D_u5;
+		for (size_t i = 0; i < det_para.cfar_para.RefCellNum_1D_u5; i++)
+		{
+			uint16_t rightRefIndex = Index_R + det_para.cfar_para.ProCellNum_R_u2 + 1 + i;
+			DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,rightRefIndex});
+		}
+		for (size_t i = det_para.cfar_para.RefCellNum_1D_u5; i < RefCellNum_u6; i++)
+		{
+			uint16_t leftRefIndex = i - det_para.cfar_para.RefCellNum_1D_u5 + 1;
+			DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,leftRefIndex });
+		}
+	}
+	else
+	{
+		RefCellNum_u6 = det_para.cfar_para.RefCellNum_1D_u5;
+		for (size_t i = 0; i < det_para.cfar_para.RefCellNum_1D_u5; i++)
+		{
+			uint16_t leftRefIndex = Index_R - det_para.cfar_para.ProCellNum_R_u2 - det_para.cfar_para.RefCellNum_1D_u5 + i;
+			DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,leftRefIndex});
+		}
+		for (size_t i = det_para.cfar_para.RefCellNum_1D_u5; i < RefCellNum_u6; i++)
+		{
+			uint16_t rightRefIndex = Index_R + det_para.cfar_para.ProCellNum_R_u2 + 1 + i;
+			DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,rightRefIndex });
+		}
+	}
+	if (Loc_OSCFAR_u5 >= RefCellNum_u6 - 1)
+	{
+		Loc_OSCFAR_u5 = floor(RefCellNum_u6 / 2) + 1;
+	}
+	Data_OSLoc_u30 = func_ObtainOSLocData(Loc_OSCFAR_u5,DataSet_RefCell_u30,RefCellNum_u6);
+	uint16_t thIdx = floor(Index_R / (det_para.RangeCellNum_u10 / R_Threshold_Num_u6));
+	float Threshold2_u39 = R_Threshold1_u9[thIdx] * Data_OSLoc_u30;
+	float CellToDetect_u32 = DataToDetect * 2 * 2;
+	if (CellToDetect_u32 > Threshold2_u39)
+	{
+		IsTarget_1D_R_u1 = 1;
+		RSNR_u11 = DataToDetect / Data_OSLoc_u30;
+	}
+}
+
+void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, DetPara& det_para, float DataToDetect, uint16_t Index_R, uint16_t Index_V, MultiDimensionalVector<float, 2>& SpatialFFTVelSel_VeloNum_RangeNum)
+{
+	uint8_t IsTarget_1D_R_u1 = 0;
+	float RSNR_u11 = 0.0;
+	func_CFARChM_OS_1D(IsTarget_1D_R_u1, RSNR_u11,det_para,DataToDetect,Index_V,Index_R,SpatialFFTVelSel_VeloNum_RangeNum);
+	if (IsTarget_1D_R_u1 == 1 || det_para.LogicTestFlag_u1 == 1)
+	{
+		uint8_t IsTarget_1D_V_u1 = 0;
+		float VSNR_u11 = 0.0;
+		func_CFARChM_OS_1D_V(IsTarget_1D_V_u1,VSNR_u11,det_para, DataToDetect, Index_V, Index_R, SpatialFFTVelSel_VeloNum_RangeNum);
+		if (IsTarget_1D_R_u1 == 1 && IsTarget_1D_V_u1 == 1)
+		{
+			IsTarget_2D = 1;
+			SNR[0] = RSNR_u11;
+			SNR[1] = VSNR_u11;
+
+			float GateLimit_Stationary_u5 = std::max(3.0, floor(det_para.ChirpNum_u11 / pow(2,6)));
+			float CellToDetect_u32 = DataToDetect * pow(2, 2);
+			if (Index_R > 4 && Index_R < det_para.RangeCellNum_u10 - 3)
+			{
+				uint16_t ChirpDiff_s11 = Index_V - det_para.Index_Chirp_NotMove_OSCFAR_u11;
+				if (det_para.Index_Chirp_NotMove_OSCFAR_u11 > GateLimit_Stationary_u5 && det_para.Index_Chirp_NotMove_OSCFAR_u11 <= det_para.ChirpNum_u11 - GateLimit_Stationary_u5)
+				{
+					if (ChirpDiff_s11 >= -GateLimit_Stationary_u5 && ChirpDiff_s11 <= GateLimit_Stationary_u5)
+					{
+						uint16_t IndexR_Left_u10 = Index_R - 2;
+						uint16_t IndexR_Right_u10 = Index_R + 2;
+						float SumChLeft_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,IndexR_Left_u10});
+						float SumChRight_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,IndexR_Right_u10});
+						float Threshold3_u30 = 0;
+						if (SumChLeft_RIndex_u30 < SumChRight_RIndex_u30)
+						{
+							Threshold3_u30 = SumChLeft_RIndex_u30;
+						}
+						else
+						{
+							Threshold3_u30 = SumChRight_RIndex_u30;
+						}
+						float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
+						if (DataToDetect <= Threshold4_u39)
+						{
+							IsTarget_2D = 0;
+							SNR[0] = 0;
+							SNR[1] = 0;
+						}
+					}
+					
+				}
+				else if (det_para.Index_Chirp_NotMove_OSCFAR_u11 <= GateLimit_Stationary_u5)
+				{
+					uint16_t LeftBoundary_u10 = det_para.ChirpNum_u11 - GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					uint16_t RightBoundary_u11 = GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					if (Index_V > LeftBoundary_u10 || Index_V <= RightBoundary_u11)
+					{
+						uint16_t IndexR_Left_u10 = Index_R - 2;
+						uint16_t IndexR_Right_u10 = Index_R + 2;
+						float SumChLeft_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,IndexR_Left_u10});
+						float SumChRight_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,IndexR_Right_u10});
+						float Threshold3_u30 = 0;
+						if (SumChLeft_RIndex_u30 < SumChRight_RIndex_u30)
+						{
+							Threshold3_u30 = SumChLeft_RIndex_u30;
+						}
+						else
+						{
+							Threshold3_u30 = SumChRight_RIndex_u30;
+						}
+						float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
+						if (DataToDetect <= Threshold4_u39)
+						{
+							IsTarget_2D = 0; 
+							SNR[0] = 0;
+							SNR[1] = 0;
+						}
+					}
+				}
+				else if (det_para.Index_Chirp_NotMove_OSCFAR_u11 > det_para.ChirpNum_u11 - GateLimit_Stationary_u5)
+				{
+					uint16_t LeftBoundary_u10 = det_para.Index_Chirp_NotMove_OSCFAR_u11 - GateLimit_Stationary_u5;
+					uint16_t RightBoundary_u11 = det_para.ChirpNum_u11 - det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					if (Index_V >= LeftBoundary_u10 || Index_V <= RightBoundary_u11)
+					{
+						uint16_t IndexR_Left_u10 = Index_R - 2;
+						uint16_t IndexR_Right_u10 = Index_R + 2;
+						float SumChLeft_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,IndexR_Left_u10 });
+						float SumChRight_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,IndexR_Right_u10});
+						float Threshold3_u30 = 0;
+						if (SumChLeft_RIndex_u30 < SumChRight_RIndex_u30)
+						{
+							Threshold3_u30 = SumChLeft_RIndex_u30;
+						}
+						else
+						{
+							Threshold3_u30 = SumChRight_RIndex_u30;
+						}
+						float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
+						if (DataToDetect <= Threshold4_u39)
+						{
+							IsTarget_2D = 0;
+							SNR[0] = 0;
+							SNR[1] = 0;
+						}
+					}
+				}
+			}
+			else if(Index_R > det_para.RangeCellNum_u10 - 3)
+			{
+				 uint16_t ChirpDiff_s11 = Index_V - det_para.Index_Chirp_NotMove_OSCFAR_u11;
+				 if (det_para.Index_Chirp_NotMove_OSCFAR_u11 > GateLimit_Stationary_u5 && det_para.Index_Chirp_NotMove_OSCFAR_u11 <= det_para.ChirpNum_u11 - GateLimit_Stationary_u5)
+				 {
+					 if (ChirpDiff_s11 >= -GateLimit_Stationary_u5 && ChirpDiff_s11 <= GateLimit_Stationary_u5)
+					 {
+						 uint16_t IndexR_Left_u10 = Index_R - 2;
+						 float SumChLeft_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,IndexR_Left_u10});
+						 float Threshold3_u30 = SumChLeft_RIndex_u30;
+						 float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
+						 if (DataToDetect <= Threshold4_u39)
+						 {
+							 IsTarget_2D = 0;
+							 SNR[0] = 0;
+							 SNR[1] = 0;
+						 }
+					 }
+				 }
+				 else if (det_para.Index_Chirp_NotMove_OSCFAR_u11 <= GateLimit_Stationary_u5)
+				 {
+					 uint16_t LeftBoundary_u10 = det_para.ChirpNum_u11 - GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					 uint16_t RightBoudnary_u11 = GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					 if (Index_V > LeftBoundary_u10 || Index_V <= RightBoudnary_u11)
+					 {
+						 uint16_t IndexR_Left_u10 = Index_R - 2;
+						 float SumChLeft_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,IndexR_Left_u10 });
+						 float Threshold3_u30 = SumChLeft_RIndex_u30;
+						 float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
+						 if (DataToDetect <= Threshold4_u39)
+						 {
+							 IsTarget_2D = 0;
+							 SNR[0] = 0;
+							 SNR[1] = 0;
+						 }
+					 }
+				 }
+				 else if (det_para.Index_Chirp_NotMove_OSCFAR_u11 > det_para.ChirpNum_u11 - GateLimit_Stationary_u5)
+				 {
+					 uint16_t LeftBoundary_u10 = det_para.Index_Chirp_NotMove_OSCFAR_u11 - GateLimit_Stationary_u5;
+					 uint16_t RightBoudnary_u11 = det_para.ChirpNum_u11 - det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					 if (Index_V >= LeftBoundary_u10 || Index_V <= RightBoudnary_u11)
+					 {
+						 uint16_t IndexR_Left_u10 = Index_R - 2;
+						 float SumChLeft_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,IndexR_Left_u10 });
+						 float Threshold3_u30 = SumChLeft_RIndex_u30;
+						 float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
+						 if (DataToDetect <= Threshold4_u39)
+						 {
+							 IsTarget_2D = 0;
+							 SNR[0] = 0;
+							 SNR[1] = 0;
+						 }
+					 }
+				 }
+			}
+		}
+		else
+		{
+			IsTarget_2D = 0;
+			SNR[0] = 0;
+			SNR[1] = 0;
+		}
+	}
+	else
+	{
+		IsTarget_2D = 0;
+		SNR[0] = 0;
+		SNR[1] = 0;
+	}
+}
+
+void func_PeakSearch_And_CFAR_2D_Cross(uint16_t& TarNum_Detected, vector<uint16_t>& peak_R, vector<uint16_t>& peak_V, vector<float>& peak_Val, vector<vector<float>>& peak_SNR, DetPara& det_para, MultiDimensionalVector<float,2>& SpatialFFTVelSel_VeloNum_RangeNum)
 {
 	uint16_t TarCountLimit_u9 = 200;
 	uint8_t PeakSearchWin = 1;
@@ -80,7 +565,7 @@ void func_PeakSearch_And_CFAR_2D_Cross(uint16_t TarNum_Detected, vector<uint16_t
 				}
 				else
 				{
-					if (Index_R == 1)
+					if (Index_R == 0)
 					{
 						uint16_t R_front = Index_R + 1;
 						if (DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,R_front}) && \
@@ -92,7 +577,7 @@ void func_PeakSearch_And_CFAR_2D_Cross(uint16_t TarNum_Detected, vector<uint16_t
 							Logic_PeakCondition = 1;
 						}
 					}
-					else if (Index_R == det_para.RangeCellNum_u10)
+					else if (Index_R == det_para.RangeCellNum_u10-1)
 					{
 						uint16_t R_back = Index_R - 1;
 						if (DataToDetect > SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,R_back}) && \
@@ -136,44 +621,46 @@ void func_PeakSearch_And_CFAR_2D_Cross(uint16_t TarNum_Detected, vector<uint16_t
 			{
 				uint8_t typeSwitch = 0;
 				uint8_t IsTarget_2D = 0;
-				float SNR = 0.0;
-				if (det_para.CFARTypeSwitch_u2.compare("00"))
+				vector<float> SNR(2,0.0);
+				if (det_para.CFARTypeSwitch_u2.compare("00") == 0)
 				{
 					typeSwitch = 0;
 				}
-				else if(det_para.CFARTypeSwitch_u2.compare("01"))
+				else if(det_para.CFARTypeSwitch_u2.compare("01") == 0)
 				{
 					typeSwitch = 1;
 				}
-				else if (det_para.CFARTypeSwitch_u2.compare("10"))
+				else if (det_para.CFARTypeSwitch_u2.compare("10") == 0)
 				{
 					typeSwitch = 2;
 				}
-				else if (det_para.CFARTypeSwitch_u2.compare("11"))
+				else if (det_para.CFARTypeSwitch_u2.compare("11") == 0)
 				{
 					typeSwitch = 3;
 				}
 				switch (typeSwitch)
 				{
 				case 0:
-					;
+					break;
 				case 1:
-					;
+					break;
 				case 2:
-					;
+					break;
 				case 3:
-					//cfarOS_cal_single_point_2D_Cross();
+					cfarOS_cal_single_point_2D_Cross(IsTarget_2D,SNR,det_para,DataToDetect,Index_R,Index_V, SpatialFFTVelSel_VeloNum_RangeNum);
+					break;
 				default:
 					break;
 				}
 				if (IsTarget_2D == 1)
 				{
-					ii = ii + 1;
 					peak_R.push_back(Index_R);
 					peak_V.push_back(Index_V);
 					peak_Val.push_back(DataToDetect);
-					SNR = 20 * log10(SNR);
+					SNR[0] = 20 * log10(SNR[0]);
+					SNR[1] = 20 * log10(SNR[1]);
 					peak_SNR.push_back(SNR);
+					ii = ii + 1;
 				}
 				if (ii > TarCountLimit_u9 - 1)
 				{
@@ -185,6 +672,18 @@ void func_PeakSearch_And_CFAR_2D_Cross(uint16_t TarNum_Detected, vector<uint16_t
 		{
 			break;
 		}
+	}
+	if (ii <= 0)
+	{
+		peak_R = { 0 };
+		peak_V = { 0 };
+		TarNum_Detected = 0;
+		peak_Val = { 0 };
+		peak_SNR[0] = {0,0};
+	}
+	else
+	{
+		TarNum_Detected = ii;
 	}
 }
 
@@ -741,12 +1240,12 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 		}
 		__TOC__(USEVEC)
 		// test code
-		vector<complex<float>> fftaOne(para_sys.AngleHorNum);
-		for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
-		{
-			fftaOne[horIdx] = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx][0][560][54][0];
-			//fftaOne[horIdx] = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum.get({horIdx,0,560,54,0});
-		}
+		//vector<complex<float>> fftaOne(para_sys.AngleHorNum);
+		//for (uint16_t horIdx = 0; horIdx < para_sys.AngleHorNum; horIdx++)
+		//{
+		//	fftaOne[horIdx] = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx][0][560][54][0];
+		//	//fftaOne[horIdx] = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum.get({horIdx,0,560,54,0});
+		//}
 	}
 	if (CoarseFrame_CFARdim > 3)
 	{
@@ -906,7 +1405,7 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 				vector<uint16_t> peak_R;
 				vector<uint16_t> peak_V;
 				vector<float> peak_Val;
-				vector<float> peak_SNR;
+				vector<vector<float>> peak_SNR;
 				func_PeakSearch_And_CFAR_2D_Cross(TarNum_Detected,peak_R,peak_V,peak_Val,peak_SNR,para_sys.det_para, SpatialFFTVelSel_VeloNum_RangeNum);
 			}
 		}
