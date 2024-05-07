@@ -12,6 +12,7 @@ void random_init(float *data, size_t size);
 void cpuSgemm(float *a, float *b, float *c, const int M, const int N, const int K);
 __global__ void naiveSgemm(float *a, float *b, float *c, const int M, const int N, const int K);
 __global__ void sgemm_kernel(float *A, float *B, float *C, const int M, const int N, const int K);
+__global__ void sgemm_out_kernel(float *A, float *B, float *C, const int M, const int N, const int K)
 
 int main()
 {
@@ -60,8 +61,9 @@ int main()
 	dim3 blockDim(32,32);
 	dim3 gridDime((n+32-1)/32,(m+32-1)/32);
 
-	naiveSgemm<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
-	sgemm_kernel<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
+	// naiveSgemm<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
+	// sgemm_kernel<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
+	sgemm_out_kernel<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
 
 	cudaEvent_t start,end;
 	cudaEventCreate(&start);
@@ -70,8 +72,9 @@ int main()
 
 	for(size_t i = 0; i < n_iter; i++)
 	{
-		naiveSgemm<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
-		sgemm_kernel<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
+		// naiveSgemm<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
+		// sgemm_kernel<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
+		sgemm_out_kernel<<<gridDim,blockDim>>>(d_A,d_B,d_C,m,n,k);
 	}
 
 	cudaEventRecord(end);
@@ -173,4 +176,39 @@ __global__ void sgemm_kernel(float *A, float *B, float *C, const int M, const in
 		__syncthreads();
 	}
 	C[n + m*N] = psum;
+}
+
+__global__ void sgemm_out_kernel(float *A, float *B, float *C, const int M, const int N, const int K)
+{
+	// outer product
+	__shared__ float tileA[32][32];
+	__shared__ float tileB[32][32];
+	float ttA[32];
+	float ttB[32];
+	float ttC[32][32] = {0};
+
+	int tx = threadIdx.x,ty = threadIdx.y;
+	int n = blockIdx.x * blockDim.x + threadIdx.x;
+	int m = blockIdx.y * blockDim.y + threadIdx.y;
+	if(n >=N || m>=M)
+	{
+		return;
+	}
+
+	for(int idx_tile = 0; idx_tile < K/32; idx_tile++)
+	{
+		tA[ty][tx] = A[m*K + idx_tile * 32 + tx];
+		tB[ty][tx] = B[(idx_tile * 32 + ty)*K + n];
+		__syncthreads();
+		for(int k = 0; k < 32; k++)
+		{
+			ttA[ty] = tA[ty][k];
+			ttB[tx] = tB[k][tx];
+			//__syncthreads();
+			ttC[ty][tx] += ttA[ty] * ttB[tx];
+			__syncthreads();
+		}
+		__syncthreads();
+	}
+	C[n+m*K] = ttC[ty][tx];
 }
