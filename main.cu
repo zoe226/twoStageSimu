@@ -183,8 +183,8 @@ __global__ void sgemm_out_kernel(float *A, float *B, float *C, const int M, cons
 	// outer product
 	__shared__ float tileA[32][32];
 	__shared__ float tileB[32][32];
-	float ttA[32];
-	float ttB[32];
+	//float ttA[32];
+	//float ttB[32];
 	float ttC[32][32] = {0};
 
 	int tx = threadIdx.x,ty = threadIdx.y;
@@ -202,11 +202,12 @@ __global__ void sgemm_out_kernel(float *A, float *B, float *C, const int M, cons
 		__syncthreads();
 		for(int k = 0; k < 32; k++)
 		{
-			ttA[ty] = tA[ty][k];
-			ttB[tx] = tB[k][tx];
+			//ttA[ty] = tA[ty][k];
+			//ttB[tx] = tB[k][tx];
 			//__syncthreads();
-			ttC[ty][tx] += ttA[ty] * ttB[tx];
-			__syncthreads();
+			//ttC[ty][tx] += ttA[ty] * ttB[tx];
+			ttC[ty][tx] += tA[ty][k] * tB[k][tx]; // 寄存器内容仅线程自己可见
+			//__syncthreads();
 		}
 		__syncthreads();
 	}
