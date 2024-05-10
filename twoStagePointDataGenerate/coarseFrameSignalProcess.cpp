@@ -1127,7 +1127,7 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 		}*/
 		
 		// save fftd as a file
-		string filename_2dout = "fftdOut.bin";
+	/*	string filename_2dout = "fftdOut.bin";
 		std::ofstream file(filename_2dout, std::ios::out | std::ios::binary);
 		if (!file.is_open()) {
 			std::cerr << "Error: Cannot open file for writing." << std::endl;
@@ -1148,7 +1148,7 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 				}
 			}
 		}
-		file.close();
+		file.close();*/
 	}
 	if (CoarseFrame_CFARdim > 2)
 	{
@@ -1270,6 +1270,33 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 		//	fftaOne[horIdx] = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[horIdx][0][560][54][0];
 		//	//fftaOne[horIdx] = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum.get({horIdx,0,560,54,0});
 		//}
+
+	    // save ffta as a file
+		/*string filename_3dout = "fftaOut.bin";
+		std::ofstream file(filename_3dout, std::ios::out | std::ios::binary);
+		if (!file.is_open()) {
+			std::cerr << "Error: Cannot open file for writing." << std::endl;
+		}
+		for (uint16_t i = 0; i < para_sys.waveLocNum; i++)
+		{
+			for (uint16_t j = 0; j < para_sys.CoarseRangeNum; j++)
+			{
+				for (uint16_t m = 0; m < para_sys.VelocityNum; m++)
+				{
+					for (size_t n = 0; n < VirtArrVertGridLen; n++)
+					{
+						for (size_t k = 0; k < para_sys.AngleHorNum; k++)
+						{
+							float real_part = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[k][n][m][j][i].real();
+							float imag_part = SpatialFFTA_AngleHorNum_yNum_VeloFFTNum_RangeNum[k][n][m][j][i].imag();
+							file.write(reinterpret_cast<const char*>(&real_part), sizeof(float));
+							file.write(reinterpret_cast<const char*>(&imag_part), sizeof(float));
+						}
+					}
+				}
+			}
+		}
+		file.close();*/
 	}
 	if (CoarseFrame_CFARdim > 3)
 	{
