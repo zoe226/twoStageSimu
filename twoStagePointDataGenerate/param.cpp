@@ -348,7 +348,7 @@ void get_info(std::string filename, BinFile& bin_file, Virtual_array& virtual_ar
 		}
 	}
 
-	bin_file.para_sys.work_mode = 0;
+	bin_file.para_sys.work_mode = 1;
 	bin_file.para_sys.frame_type = 0;
 	getDetPara(bin_file.para_sys.det_para, bin_file.para_sys);
 

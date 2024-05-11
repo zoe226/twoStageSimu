@@ -279,7 +279,7 @@ void func_CFARChM_OS_1D(uint8_t& IsTarget_1D_R_u1, float& RSNR_u11,DetPara& det_
 	}
 	else if (Logic2_u1 == 1)
 	{
-		RefCellNum_u6 = det_para.cfar_para.RefCellNum_1D_u5;
+		RefCellNum_u6 = det_para.cfar_para.RefCellNum_1D_u5 + Index_R - det_para.cfar_para.ProCellNum_R_u2 - 1;
 		for (size_t i = 0; i < det_para.cfar_para.RefCellNum_1D_u5; i++)
 		{
 			uint16_t rightRefIndex = Index_R + det_para.cfar_para.ProCellNum_R_u2 + 1 + i;
@@ -287,13 +287,13 @@ void func_CFARChM_OS_1D(uint8_t& IsTarget_1D_R_u1, float& RSNR_u11,DetPara& det_
 		}
 		for (size_t i = det_para.cfar_para.RefCellNum_1D_u5; i < RefCellNum_u6; i++)
 		{
-			uint16_t leftRefIndex = i - det_para.cfar_para.RefCellNum_1D_u5 + 1;
+			uint16_t leftRefIndex = 1 + i - det_para.cfar_para.RefCellNum_1D_u5;
 			DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,leftRefIndex });
 		}
 	}
 	else
 	{
-		RefCellNum_u6 = det_para.cfar_para.RefCellNum_1D_u5;
+		RefCellNum_u6 = det_para.cfar_para.RefCellNum_1D_u5 + det_para.RangeCellNum_u10 - Index_R - det_para.cfar_para.ProCellNum_R_u2 - 1;
 		for (size_t i = 0; i < det_para.cfar_para.RefCellNum_1D_u5; i++)
 		{
 			uint16_t leftRefIndex = Index_R - det_para.cfar_para.ProCellNum_R_u2 - det_para.cfar_para.RefCellNum_1D_u5 + i;
@@ -301,11 +301,11 @@ void func_CFARChM_OS_1D(uint8_t& IsTarget_1D_R_u1, float& RSNR_u11,DetPara& det_
 		}
 		for (size_t i = det_para.cfar_para.RefCellNum_1D_u5; i < RefCellNum_u6; i++)
 		{
-			uint16_t rightRefIndex = Index_R + det_para.cfar_para.ProCellNum_R_u2 + 1 + i;
+			uint16_t rightRefIndex = Index_R + det_para.cfar_para.ProCellNum_R_u2 + 1 + i - det_para.cfar_para.RefCellNum_1D_u5;
 			DataSet_RefCell_u30[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,rightRefIndex });
 		}
 	}
-	if (Loc_OSCFAR_u5 >= RefCellNum_u6 - 1)
+	if (Loc_OSCFAR_u5 >= RefCellNum_u6)
 	{
 		Loc_OSCFAR_u5 = floor(RefCellNum_u6 / 2) + 1;
 	}
@@ -338,9 +338,9 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 
 			float GateLimit_Stationary_u5 = std::max(3.0, floor(det_para.ChirpNum_u11 / pow(2,6)));
 			float CellToDetect_u32 = DataToDetect * pow(2, 2);
-			if (Index_R > 4 && Index_R < det_para.RangeCellNum_u10 - 3)
+			if (Index_R > 3 && Index_R < det_para.RangeCellNum_u10 - 4)
 			{
-				uint16_t ChirpDiff_s11 = Index_V - det_para.Index_Chirp_NotMove_OSCFAR_u11;
+				uint16_t ChirpDiff_s11 = Index_V + 1 - det_para.Index_Chirp_NotMove_OSCFAR_u11;
 				if (det_para.Index_Chirp_NotMove_OSCFAR_u11 > GateLimit_Stationary_u5 && det_para.Index_Chirp_NotMove_OSCFAR_u11 <= det_para.ChirpNum_u11 - GateLimit_Stationary_u5)
 				{
 					if (ChirpDiff_s11 >= -GateLimit_Stationary_u5 && ChirpDiff_s11 <= GateLimit_Stationary_u5)
@@ -359,7 +359,7 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 							Threshold3_u30 = SumChRight_RIndex_u30;
 						}
 						float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
-						if (DataToDetect <= Threshold4_u39)
+						if (CellToDetect_u32 <= Threshold4_u39)
 						{
 							IsTarget_2D = 0;
 							SNR[0] = 0;
@@ -370,8 +370,8 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 				}
 				else if (det_para.Index_Chirp_NotMove_OSCFAR_u11 <= GateLimit_Stationary_u5)
 				{
-					uint16_t LeftBoundary_u10 = det_para.ChirpNum_u11 - GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11;
-					uint16_t RightBoundary_u11 = GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					uint16_t LeftBoundary_u10 = det_para.ChirpNum_u11 - GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11 - 1;
+					uint16_t RightBoundary_u11 = GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11 - 1;
 					if (Index_V > LeftBoundary_u10 || Index_V <= RightBoundary_u11)
 					{
 						uint16_t IndexR_Left_u10 = Index_R - 2;
@@ -388,7 +388,7 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 							Threshold3_u30 = SumChRight_RIndex_u30;
 						}
 						float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
-						if (DataToDetect <= Threshold4_u39)
+						if (CellToDetect_u32 <= Threshold4_u39)
 						{
 							IsTarget_2D = 0; 
 							SNR[0] = 0;
@@ -398,8 +398,8 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 				}
 				else if (det_para.Index_Chirp_NotMove_OSCFAR_u11 > det_para.ChirpNum_u11 - GateLimit_Stationary_u5)
 				{
-					uint16_t LeftBoundary_u10 = det_para.Index_Chirp_NotMove_OSCFAR_u11 - GateLimit_Stationary_u5;
-					uint16_t RightBoundary_u11 = det_para.ChirpNum_u11 - det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					uint16_t LeftBoundary_u10 = det_para.Index_Chirp_NotMove_OSCFAR_u11 - GateLimit_Stationary_u5 - 1;
+					uint16_t RightBoundary_u11 = det_para.ChirpNum_u11 - det_para.Index_Chirp_NotMove_OSCFAR_u11 - 1;
 					if (Index_V >= LeftBoundary_u10 || Index_V <= RightBoundary_u11)
 					{
 						uint16_t IndexR_Left_u10 = Index_R - 2;
@@ -416,7 +416,7 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 							Threshold3_u30 = SumChRight_RIndex_u30;
 						}
 						float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
-						if (DataToDetect <= Threshold4_u39)
+						if (CellToDetect_u32 <= Threshold4_u39)
 						{
 							IsTarget_2D = 0;
 							SNR[0] = 0;
@@ -427,7 +427,7 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 			}
 			else if(Index_R > det_para.RangeCellNum_u10 - 3)
 			{
-				 uint16_t ChirpDiff_s11 = Index_V - det_para.Index_Chirp_NotMove_OSCFAR_u11;
+				 uint16_t ChirpDiff_s11 = Index_V + 1 - det_para.Index_Chirp_NotMove_OSCFAR_u11;
 				 if (det_para.Index_Chirp_NotMove_OSCFAR_u11 > GateLimit_Stationary_u5 && det_para.Index_Chirp_NotMove_OSCFAR_u11 <= det_para.ChirpNum_u11 - GateLimit_Stationary_u5)
 				 {
 					 if (ChirpDiff_s11 >= -GateLimit_Stationary_u5 && ChirpDiff_s11 <= GateLimit_Stationary_u5)
@@ -436,7 +436,7 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 						 float SumChLeft_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({Index_V,IndexR_Left_u10});
 						 float Threshold3_u30 = SumChLeft_RIndex_u30;
 						 float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
-						 if (DataToDetect <= Threshold4_u39)
+						 if (CellToDetect_u32 <= Threshold4_u39)
 						 {
 							 IsTarget_2D = 0;
 							 SNR[0] = 0;
@@ -446,15 +446,15 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 				 }
 				 else if (det_para.Index_Chirp_NotMove_OSCFAR_u11 <= GateLimit_Stationary_u5)
 				 {
-					 uint16_t LeftBoundary_u10 = det_para.ChirpNum_u11 - GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11;
-					 uint16_t RightBoudnary_u11 = GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					 uint16_t LeftBoundary_u10 = det_para.ChirpNum_u11 - GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11 - 1 ;
+					 uint16_t RightBoudnary_u11 = GateLimit_Stationary_u5 + det_para.Index_Chirp_NotMove_OSCFAR_u11  - 1;
 					 if (Index_V > LeftBoundary_u10 || Index_V <= RightBoudnary_u11)
 					 {
 						 uint16_t IndexR_Left_u10 = Index_R - 2;
 						 float SumChLeft_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,IndexR_Left_u10 });
 						 float Threshold3_u30 = SumChLeft_RIndex_u30;
 						 float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
-						 if (DataToDetect <= Threshold4_u39)
+						 if (CellToDetect_u32 <= Threshold4_u39)
 						 {
 							 IsTarget_2D = 0;
 							 SNR[0] = 0;
@@ -464,15 +464,15 @@ void cfarOS_cal_single_point_2D_Cross(uint8_t& IsTarget_2D, vector<float>& SNR, 
 				 }
 				 else if (det_para.Index_Chirp_NotMove_OSCFAR_u11 > det_para.ChirpNum_u11 - GateLimit_Stationary_u5)
 				 {
-					 uint16_t LeftBoundary_u10 = det_para.Index_Chirp_NotMove_OSCFAR_u11 - GateLimit_Stationary_u5;
-					 uint16_t RightBoudnary_u11 = det_para.ChirpNum_u11 - det_para.Index_Chirp_NotMove_OSCFAR_u11;
+					 uint16_t LeftBoundary_u10 = det_para.Index_Chirp_NotMove_OSCFAR_u11 - GateLimit_Stationary_u5 - 1;
+					 uint16_t RightBoudnary_u11 = det_para.ChirpNum_u11 - det_para.Index_Chirp_NotMove_OSCFAR_u11 - 1;
 					 if (Index_V >= LeftBoundary_u10 || Index_V <= RightBoudnary_u11)
 					 {
 						 uint16_t IndexR_Left_u10 = Index_R - 2;
 						 float SumChLeft_RIndex_u30 = SpatialFFTVelSel_VeloNum_RangeNum.get({ Index_V,IndexR_Left_u10 });
 						 float Threshold3_u30 = SumChLeft_RIndex_u30;
 						 float Threshold4_u39 = Threshold3_u30 * det_para.Threshold_RangeDim_For_2D_OSCFAR_u9;
-						 if (DataToDetect <= Threshold4_u39)
+						 if (CellToDetect_u32 <= Threshold4_u39)
 						 {
 							 IsTarget_2D = 0;
 							 SNR[0] = 0;
@@ -1424,11 +1424,11 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 				}
 			}
 			// test code
-			/*vector<float> fft3dAbs(para_sys.CoarseRangeNum);
+			vector<float> fft3dAbs(para_sys.CoarseRangeNum);
 			for (size_t i = 0; i < para_sys.CoarseRangeNum; i++)
 			{
 				fft3dAbs[i] = SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum.get({32,15,i,0});
-			}*/
+			}
 			uint8_t Switch3DMode = 0;
 			uint8_t SqueezeDim = 1;
 			for (uint16_t Beamcnt = 0; Beamcnt < para_sys.waveLocNum; Beamcnt++)
@@ -1450,8 +1450,25 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<
 				/*vector<float> max3dOne(para_sys.CoarseRangeNum);
 				for (uint16_t i = 0; i < para_sys.CoarseRangeNum; i++)
 				{
-					max3dOne[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({56,i});
+					max3dOne[i] = SpatialFFTVelSel_VeloNum_RangeNum.get({0,i});
 				}*/
+
+				// save ffta as a file
+				/*string filename_testPoint = "testPointc.bin";
+				std::ofstream file(filename_testPoint, std::ios::out | std::ios::binary);
+				if (!file.is_open()) {
+					std::cerr << "Error: Cannot open file for writing." << std::endl;
+				}
+				for (uint16_t i = 0; i < para_sys.CoarseRangeNum; i++)
+				{
+					for (uint16_t j = 0; j < para_sys.VelocityNum; j++)
+					{
+						float real_part = SpatialFFTVelSel_VeloNum_RangeNum.get({j,i});
+						file.write(reinterpret_cast<const char*>(&real_part), sizeof(float));		
+					}
+				}
+				file.close();*/
+
 				uint16_t TarNum_Detected = 0;
 				vector<uint16_t> peak_R;
 				vector<uint16_t> peak_V;
