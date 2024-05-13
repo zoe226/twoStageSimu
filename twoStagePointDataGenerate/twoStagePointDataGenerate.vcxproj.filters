@@ -18,5 +18,25 @@
     <ClCompile Include="mimoRadarTwoStageMain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="param.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="coarseFrameSignalProcess.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="fineFrameSignalProcess.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="param.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="coarseFrameSignalProcess.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fineFrameSignalProcess.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

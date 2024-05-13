@@ -1,0 +1,79 @@
+﻿  coarseFrameSignalProcess.cpp
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(75,20): warning C4244: “初始化”: 从“double”转换到“uint8_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(144,22): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(149,24): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(165,24): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(176,22): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(181,24): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(192,22): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(208,22): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(213,24): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(220,44): warning C4244: “=”: 从“double”转换到“uint8_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(223,17): warning C4244: “初始化”: 从“double”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(270,27): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(275,28): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(285,27): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(290,26): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(299,26): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(304,27): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(310,44): warning C4244: “=”: 从“double”转换到“uint8_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(313,17): warning C4244: “初始化”: 从“double”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(339,34): warning C4244: “初始化”: 从“const _Ty”转换到“float”，可能丢失数据
+          with
+          [
+              _Ty=double
+          ]
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(340,27): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(373,32): warning C4244: “初始化”: 从“float”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(374,33): warning C4244: “初始化”: 从“float”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(401,32): warning C4244: “初始化”: 从“float”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(449,33): warning C4244: “初始化”: 从“float”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(450,34): warning C4244: “初始化”: 从“float”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(467,33): warning C4244: “初始化”: 从“float”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(615,18): warning C4244: “初始化”: 从“double”转换到“uint8_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(798,21): warning C4244: “初始化”: 从“double”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(829,21): warning C4244: “初始化”: 从“double”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(860,21): warning C4244: “初始化”: 从“double”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(929,24): warning C4244: “=”: 从“double”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=float
+          ]
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(935,25): warning C4244: “=”: 从“double”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=float
+          ]
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1022,21): warning C4244: “=”: 从“double”转换到“uint8_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1023,20): warning C4244: “=”: 从“double”转换到“uint8_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1110,176): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1110,158): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1114,176): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1114,158): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1250,176): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1250,160): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1255,176): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1255,160): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1502,103): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\coarseFrameSignalProcess.cpp(1502,93): warning C4244: “参数”: 从“double”转换到“const std::complex<float>::_Ty”，可能丢失数据
+  fineFrameSignalProcess.cpp
+  mimoRadarTwoStageMain.cpp
+  param.cpp
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\param.cpp(11,18): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\param.cpp(12,18): warning C4267: “初始化”: 从“size_t”转换到“uint16_t”，可能丢失数据
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\param.cpp(107,42): warning C4244: “=”: 从“float”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=uint16_t
+          ]
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\param.cpp(112,42): warning C4244: “=”: 从“float”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=uint16_t
+          ]
+D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\param.cpp(334,33): warning C4305: “=”: 从“double”到“float”截断
+  正在生成代码
+  Previous IPDB not found, fall back to full compilation.
+  All 1471 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  twoStagePointDataGenerate.vcxproj -> D:\GitRepo\twoStageSimu\twoStagePointDataGenerate\x64\Release\twoStagePointDataGenerate.exe
