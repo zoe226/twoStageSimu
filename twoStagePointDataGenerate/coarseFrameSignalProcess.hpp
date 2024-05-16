@@ -64,6 +64,28 @@ private:
     std::vector<T> data_;
 };
 
+struct TOI_CFAR_element
+{
+    float rIdx;
+    float vIdx;
+    uint16_t Beamcnt;
+    float pVal;
+    float rSNR;
+    float vSNR;
+};
+
+struct TOI_ConRegion_element
+{
+    float rIdx;
+    float vIdx;
+    float pVal;
+    uint16_t tarcnt;
+};
+
+void Func_Beam_Union_2(vector<TOI_ConRegion_element>& TOI_ConRegion, uint16_t tarcnt, TOI_ConRegion_element& single_tar_Info, uint16_t CompareIdx, uint16_t MaxValIdx);
+void func_getConRegion(vector<TOI_ConRegion_element>& TOI_ConRegion, uint16_t TarNum_union, vector<TOI_CFAR_element>& TOI_CFAR, MultiDimensionalVector<float, 3>& FFT2D_abs, ConReg& con_reg, uint16_t CoarseRangeNum, uint16_t VelocityNum);
+void Func_Beam_Union(vector<TOI_CFAR_element>& TOI_CFAR, uint16_t Beamcnt, TOI_CFAR_element& toiEle, Union& union_para);
+void Spatial_2D_det_V2(vector<uint16_t>& SpatialIdx, vector<float>& SpatialSNR, vector<float>& SpatialPow, vector<float>& FFT3D_abs_single_tar, float Vsnr_db, SpatialPara& spatial_para);
 uint8_t func_DetermineEachElement(uint8_t LocComp_u5, uint8_t LeftLoc_u1, float Cell_ToCompare_u30, vector<float>& DataSet_RefCell_u30, uint16_t RefCellNum_u6);
 float func_ObtainOSLocData(uint8_t Loc_OSCFAR_u5, vector<float>& DataSet_RefCell_u30, uint16_t RefCellNum_u6);
 void func_CFARChM_OS_1D_V(uint8_t& IsTarget_1D_V_u1, float& VSNR_u11, DetPara& det_para, float DataToDetect, uint16_t Index_V, uint16_t Index_R, MultiDimensionalVector<float, 2>& SpatialFFTVelSel_VeloNum_RangeNum);
@@ -78,5 +100,5 @@ void rectWin(vector<float>& win_rect, uint16_t N);
 void hanningWin(vector<float>& win_hanning, uint16_t N);
 void hammingWin(vector<float>& win_hamming, uint16_t N);
 void func_winR_process(vector<vector<vector<float>>>& WinRout_RangeSampleNum_ChirpNum_RxNum, vector<uint8_t>& fft_win_type, uint16_t win_len, uint16_t chirpNum, uint16_t rxNum, unique_ptr<int16_t[]>& radarInputdata);
-void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<vector<float>>& point_info, vector<vector<float>>& TOI, ParaSys& para_sys, Virtual_array& virtual_array, vector<complex<float>>& compensate_mat, vector<vector<vector<complex<float>>>>& CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum);
-void func_signal_process_coarse(vector<vector<float>>& TOI, vector<vector<float>>& point_info, const string& filename, ParaSys& para_sys, Virtual_array& virtual_array, unique_ptr<int16_t[]>& radarInputdata, vector<complex<float>>& compensate_mat);
+void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector<TOI_ConRegion_element>& TOI_ConRegion, ParaSys& para_sys, Virtual_array& virtual_array, vector<complex<float>>& compensate_mat, vector<vector<vector<complex<float>>>>& CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum);
+void func_signal_process_coarse(vector<TOI_CFAR_element>& TOI_CFAR, vector<TOI_ConRegion_element>& TOI_ConRegion, const string& filename, ParaSys& para_sys, Virtual_array& virtual_array, unique_ptr<int16_t[]>& radarInputdata, vector<complex<float>>& compensate_mat);

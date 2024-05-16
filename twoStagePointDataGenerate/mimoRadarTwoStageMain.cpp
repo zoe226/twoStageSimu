@@ -40,6 +40,8 @@ int main(int argc, char* argv[]) {
 
 	vector<vector<float>> point_info;
 	vector<vector<float>> result_data;
+	vector<TOI_ConRegion_element> TOI_ConRegion;
+	vector<TOI_CFAR_element> TOI_CFAR;
 	uint16_t TOI_max = 5000;
 	uint16_t point_max = 5000;
 	uint16_t result_max = 15000;
@@ -58,7 +60,7 @@ int main(int argc, char* argv[]) {
 			throw invalid_argument("Input value is illegal.");
 		}
 
-		func_signal_process_coarse(TOI, point_info, filename, bin_file.para_sys, virtual_array, bin_file.input_data, compensate);
+		func_signal_process_coarse(TOI_CFAR, TOI_ConRegion, filename, bin_file.para_sys, virtual_array, bin_file.input_data, compensate);
 	}
 	else if (bin_file.para_sys.frame_type == 1) {
 		result_data.resize(result_max, vector<float>(9));
