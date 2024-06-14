@@ -297,14 +297,14 @@ void func_CFARChM_OS_1D_V(uint8_t& IsTarget_1D_V_u1, float& VSNR_u11, DetPara& d
 	uint8_t Logic4_u1 = 0;
 	uint8_t Logic5_u1 = 0;
 	uint16_t UpBoundary_u9 = 1 + det_para.cfar_para.ProCellNum_V_u2 + det_para.cfar_para.RefCellNum_1D_u5;
-	uint16_t DownBoundary_u10 = det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_R_u2 - det_para.cfar_para.RefCellNum_1D_u5;
+	uint16_t DownBoundary_u10 = det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_V_u2 - det_para.cfar_para.RefCellNum_1D_u5;
 	uint16_t RefCellNum_u6 = 2 * det_para.cfar_para.RefCellNum_1D_u5;
 	if (UpBoundary_u9 >= DownBoundary_u10)
 	{
 		det_para.cfar_para.ProCellNum_V_u2 = 1;
 		det_para.cfar_para.RefCellNum_1D_u5 = 1;
 		uint16_t UpBoundary_u9 = 1 + det_para.cfar_para.ProCellNum_V_u2 + det_para.cfar_para.RefCellNum_1D_u5;
-		uint16_t DownBoundary_u10 = det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_R_u2 - det_para.cfar_para.RefCellNum_1D_u5;
+		uint16_t DownBoundary_u10 = det_para.ChirpNum_u11 - det_para.cfar_para.ProCellNum_V_u2 - det_para.cfar_para.RefCellNum_1D_u5;
 	}
 	if (Index_V >= 0  && Index_V <= 0 + det_para.cfar_para.ProCellNum_V_u2)
 	{
@@ -1271,6 +1271,14 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector
 		}
 		// step2:速度维加窗
 		func_winD_process(WinDout_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum, para_sys.fft_win_type, para_sys.VelocityNum, para_sys.CoarseRangeNum, MIMONum, para_sys.waveLocNum, CoarseRangeFFT_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum);
+		// test code one chirp 
+		/*float* chirp1 = (float*)malloc(768 * 2 * sizeof(float));
+		for (size_t i = 0; i < 768; i++)
+		{
+			chirp1[2 * i] = real(WinDout_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum[i][0][0][0]);
+			chirp1[2 * i + 1] = imag(WinDout_ChirpNum_RangeSampleNum_MIMONum_WaveLocNum[i][0][0][0]);
+		}
+		free(chirp1);*/
 		// test code
 		/*vector<complex<float>>  windChirp(para_sys.CoarseRangeNum);
 		for (uint16_t sampleIdx = 0; sampleIdx < para_sys.CoarseRangeNum; sampleIdx++)
@@ -1395,7 +1403,7 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector
 			}*/
 			func_Spatial_Reorder(result_xNum_yNum_VeloFFTNum_RangeNum, FFT2D_MIMONum_VeloFFTNum_CoarseRangeBinNum_WaveLocNum,para_sys.Array_option,MIMONum,virtual_array.pos_in_mat,VirtArrHorGridLen,VirtArrVertGridLen,para_sys.VelocityNum,para_sys.CoarseRangeNum,para_sys.waveLocNum);
 			//test code
-			/*vector<complex<float>> afterReorderOne(VirtArrHorGridLen);
+		/*	vector<complex<float>> afterReorderOne(VirtArrHorGridLen);
 			for (uint16_t xIdx = 0; xIdx < VirtArrHorGridLen; xIdx++)
 			{
 				afterReorderOne[xIdx] = result_xNum_yNum_VeloFFTNum_RangeNum[xIdx][0][56][89][0];
@@ -1404,11 +1412,11 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector
 		// winA (matlab需要加一个分支，不加窗的分支)
 		func_winA_process(winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum,para_sys.fft_win_type , VirtArrHorGridLen, VirtArrVertGridLen, para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum,result_xNum_yNum_VeloFFTNum_RangeNum);
 		// test code
-		/*vector<complex<float>> winAone(VirtArrHorGridLen);
+		vector<complex<float>> winAone(VirtArrHorGridLen);
 		for (uint16_t xIdx = 0; xIdx < VirtArrHorGridLen; xIdx++)
 		{
-			winAone[xIdx] = winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum[xIdx][0][89][40][0];
-		}*/
+			winAone[xIdx] = winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum[xIdx][0][0][0][0];
+		}
 		// FFTA
 		__TIC__(USEVEC)
 		for (uint16_t waveLocIdx = 0; waveLocIdx < para_sys.waveLocNum; waveLocIdx++)
@@ -1679,8 +1687,9 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector
 				vector<uint16_t> peak_V;
 				vector<float> peak_Val;
 				vector<vector<float>> peak_SNR;
+				__TIC__(CFARTIME);
 				func_PeakSearch_And_CFAR_2D_Cross(TarNum_Detected, peak_R, peak_V, peak_Val, peak_SNR, para_sys.det_para, SpatialFFTVelSel_VeloNum_RangeNum);
-
+				__TOC__(CFARTIME);
 				if (para_sys.work_mode == 0)
 				{
 					for (uint16_t tarcnt = 0; tarcnt < TarNum_Detected; tarcnt++)
@@ -1746,6 +1755,25 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector
 					TOI_ConRegion[idx2].rIdx = para_sys.CoarseRangeAxis[TOI_ConRegion[idx2].rIdx];
 					TOI_ConRegion[idx2].vIdx = para_sys.VelocityAxis[TOI_ConRegion[idx2].vIdx];
 				}
+
+				// save the result as a bin file
+				/*string filename_toiout = "toiRegionOut.bin";
+				std::ofstream file(filename_toiout, std::ios::out | std::ios::binary);
+				if (!file.is_open()) {
+					std::cerr << "Error: Cannot open file for writing." << std::endl;
+				}
+				for (uint16_t i = 0; i < TOI_ConRegion.size(); i++)
+				{
+					float rIdx = TOI_ConRegion[i].rIdx;
+					float vIdx = TOI_ConRegion[i].vIdx;
+					float pVal = TOI_ConRegion[i].pVal;
+					float tarcnt = TOI_ConRegion[i].tarcnt;
+					file.write(reinterpret_cast<const char*>(&rIdx),sizeof(float));
+					file.write(reinterpret_cast<const char*>(&vIdx), sizeof(float));
+					file.write(reinterpret_cast<const char*>(&pVal), sizeof(float));
+					file.write(reinterpret_cast<const char*>(&tarcnt), sizeof(float));
+				}
+				file.close();*/
 			}
 			else
 			{
@@ -1806,6 +1834,16 @@ void func_signal_process_coarse(vector<TOI_CFAR_element>& TOI_CFAR, vector<TOI_C
 		for (int i = 0; i < para_sys.RangeSampleNum / 2; i++) {
 			tempfftr[i] = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[i][45][23];
 		}*/
+
+		// test code
+		//float* chirp1 = (float*)malloc(128*2*sizeof(float));
+		//for (size_t i = 0; i < 128; i++)
+		//{
+		//	chirp1[2 * i] = real(CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[i][1][0]);
+		//	chirp1[2 * i + 1] = imag(CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[i][1][0]);
+		//}
+		//free(chirp1);
+
 	}
 	else if (para_sys.InputHasDonePreProcess == 1) {
 		// reshape，复数的实部和虚部顺序存储
