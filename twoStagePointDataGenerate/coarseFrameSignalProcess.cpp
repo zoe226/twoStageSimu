@@ -471,6 +471,10 @@ void func_CFARChM_OS_1D(uint8_t& IsTarget_1D_R_u1, float& RSNR_u11,DetPara& det_
 	else if (Logic2_u1 == 1)
 	{
 		RefCellNum_u6 = det_para.cfar_para.RefCellNum_1D_u5 + Index_R - det_para.cfar_para.ProCellNum_R_u2 - 1;
+		if (det_para.cfar_para.RefCellNum_1D_u5 > RefCellNum_u6)
+		{
+			RefCellNum_u6 = det_para.cfar_para.RefCellNum_1D_u5;
+		}
 		for (size_t i = 0; i < det_para.cfar_para.RefCellNum_1D_u5; i++)
 		{
 			uint16_t rightRefIndex = Index_R + det_para.cfar_para.ProCellNum_R_u2 + 1 + i;
@@ -1326,7 +1330,7 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector
 		}*/
 		
 		// save fftd as a file
-	/*	string filename_2dout = "fftdOut.bin";
+		/*string filename_2dout = "fftdOut.bin";
 		std::ofstream file(filename_2dout, std::ios::out | std::ios::binary);
 		if (!file.is_open()) {
 			std::cerr << "Error: Cannot open file for writing." << std::endl;
@@ -1412,11 +1416,11 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector
 		// winA (matlab需要加一个分支，不加窗的分支)
 		func_winA_process(winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum,para_sys.fft_win_type , VirtArrHorGridLen, VirtArrVertGridLen, para_sys.VelocityNum, para_sys.CoarseRangeNum, para_sys.waveLocNum,result_xNum_yNum_VeloFFTNum_RangeNum);
 		// test code
-		vector<complex<float>> winAone(VirtArrHorGridLen);
+		/*vector<complex<float>> winAone(VirtArrHorGridLen);
 		for (uint16_t xIdx = 0; xIdx < VirtArrHorGridLen; xIdx++)
 		{
 			winAone[xIdx] = winAout_xNum_yNum_VeloFFTNum_RangeNum_waveLocNum[xIdx][0][0][0][0];
-		}
+		}*/
 		// FFTA
 		__TIC__(USEVEC)
 		for (uint16_t waveLocIdx = 0; waveLocIdx < para_sys.waveLocNum; waveLocIdx++)
@@ -1582,7 +1586,7 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector
 				}
 			}
 			// test code
-			vector<float> tempAbs(para_sys.CoarseRangeNum);
+			//vector<float> tempAbs(para_sys.CoarseRangeNum);
 			/*for (size_t i = 0; i < para_sys.CoarseRangeNum; i++)
 			{
 				tempAbs[i] = SpatialFFTA_ABSMeanMax_VeloFFTNum_RangeNum.get({ 15, i, 0 });
@@ -1627,11 +1631,11 @@ void FFTD_SpatialFFT_CFAR_CoarseFrame(vector<TOI_CFAR_element>& TOI_CFAR, vector
 				}
 			}
 			// test code
-			vector<float> fft3dAbs(para_sys.CoarseRangeNum);
+			/*vector<float> fft3dAbs(para_sys.CoarseRangeNum);
 			for (size_t i = 0; i < para_sys.CoarseRangeNum; i++)
 			{
 				fft3dAbs[i] = SpatialFFTA_ABSMean_AngleHorNum_VeloFFTNum_RangeNum.get({ 32,15,i,0 });
-			}
+			}*/
 
 			uint8_t Switch3DMode = 0;
 			uint8_t SqueezeDim = 1;
@@ -1871,26 +1875,25 @@ void func_signal_process_coarse(vector<TOI_CFAR_element>& TOI_CFAR, vector<TOI_C
 		fftrOutOne[i] = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[i][0][0];
 	}*/
 	// save the result as a bin file
-	//string filename_1dout = "fftrOut.bin";
-	//std::ofstream file(filename_1dout, std::ios::out | std::ios::binary);
-	//if (!file.is_open()) {
-	//	std::cerr << "Error: Cannot open file for writing." << std::endl;
-	//}
-	//for (uint16_t i = 0; i < para_sys.RxNum; i++)
-	//{
-	//	for (uint16_t j = 0; j < para_sys.VelocityNum; j++)
-	//	{
-	//		for (size_t k = 0; k < para_sys.CoarseRangeNum; k++)
-	//		{
-	//			float real_part = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][j][i].real();
-	//			float imag_part = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][j][i].imag();
-	//			file.write(reinterpret_cast<const char*>(&real_part),sizeof(float));
-	//			file.write(reinterpret_cast<const char*>(&imag_part),sizeof(float));
-	//		}
+	/*string filename_1dout = "fftrOut.bin";
+	std::ofstream file(filename_1dout, std::ios::out | std::ios::binary);
+	if (!file.is_open()) {
+		std::cerr << "Error: Cannot open file for writing." << std::endl;
+	}
+	for (uint16_t i = 0; i < para_sys.RxNum; i++)
+	{
+		for (uint16_t j = 0; j < para_sys.VelocityNum; j++)
+		{
+			for (size_t k = 0; k < para_sys.CoarseRangeNum; k++)
+			{
+				float real_part = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][j][i].real();
+				float imag_part = CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum[k][j][i].imag();
+				file.write(reinterpret_cast<const char*>(&real_part),sizeof(float));
+				file.write(reinterpret_cast<const char*>(&imag_part),sizeof(float));
+			}
 
-	//	}
-
-	//}
-	//file.close();
+		}
+	}
+	file.close();*/
 	FFTD_SpatialFFT_CFAR_CoarseFrame(TOI_CFAR, TOI_ConRegion, para_sys, virtual_array, compensate_mat, CoarseRangeFFT_ValidCoarseRangeBinNum_ChirpNum_RxNum);
 }
